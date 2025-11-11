@@ -99,30 +99,33 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
 
 /// Generate metadata report for documentation
 pub fn generate_metadata_report() -> String {
+    use std::fmt::Write;
+
     let mut report = String::from("# Language Registry Metadata Report\n\n");
 
     let stats = crate::utils::LanguageStats::calculate();
-    report.push_str(&format!("## Statistics\n"));
-    report.push_str(&format!("- Total Languages: {}\n", stats.total_languages));
-    report.push_str(&format!("- RCA Supported: {}\n", stats.rca_supported));
-    report.push_str(&format!("- AST-Grep Supported: {}\n", stats.ast_grep_supported));
-    report.push_str(&format!("- Compiled Languages: {}\n", stats.compiled_languages));
-    report.push_str(&format!("- Interpreted Languages: {}\n\n", stats.interpreted_languages));
+    report.push_str("## Statistics\n");
+    let _ = writeln!(&mut report, "- Total Languages: {}", stats.total_languages);
+    let _ = writeln!(&mut report, "- RCA Supported: {}", stats.rca_supported);
+    let _ = writeln!(&mut report, "- AST-Grep Supported: {}", stats.ast_grep_supported);
+    let _ = writeln!(&mut report, "- Compiled Languages: {}", stats.compiled_languages);
+    let _ = writeln!(&mut report, "- Interpreted Languages: {}\n", stats.interpreted_languages);
 
     report.push_str("## Language Support Matrix\n\n");
     report.push_str("| Language | Extensions | RCA | AST-Grep | Tree-Sitter | Family |\n");
     report.push_str("|----------|------------|-----|----------|-------------|--------|\n");
 
     for lang in LANGUAGE_REGISTRY.supported_languages() {
-        report.push_str(&format!(
-            "| {} | {} | {} | {} | {} | {} |\n",
+        let _ = writeln!(
+            &mut report,
+            "| {} | {} | {} | {} | {} | {} |",
             lang.name,
             lang.extensions.join(", "),
             if lang.rca_supported { "✓" } else { "✗" },
             if lang.ast_grep_supported { "✓" } else { "✗" },
             if lang.tree_sitter_language.is_some() { "✓" } else { "✗" },
             lang.family.as_deref().unwrap_or("-"),
-        ));
+        );
     }
 
     report

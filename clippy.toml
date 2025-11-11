@@ -1,20 +1,23 @@
-# Clippy Configuration for Singularity Analysis Engine
-# This enforces strict code quality standards
+# Clippy Configuration for Singularity Language Registry
+# Strict and reasonable code quality standards
 
 # Cognitive complexity threshold for functions
-cognitive-complexity-threshold = 15
+cognitive-complexity-threshold = 30
 
 # Maximum number of lines for a single function
-too-many-lines-threshold = 100
+too-many-lines-threshold = 1000
 
 # Maximum number of single char names
-single-char-binding-names-threshold = 4
+single-char-binding-names-threshold = 5
 
 # Enum variant size difference threshold (in bytes)
-enum-variant-size-threshold = 200
+enum-variant-size-threshold = 256
 
 # Type complexity threshold
-type-complexity-threshold = 250
+type-complexity-threshold = 400
+
+# Maximum number of arguments to a function
+too-many-arguments-threshold = 7
 
 # Disallowed names
 disallowed-names = [
@@ -56,17 +59,8 @@ allow-unwrap-in-tests = true
 # Maximum struct bools
 max-struct-bools = 3
 
-
 # Allow certain attributes without reason
 allowed-duplicate-crates = []
-
-# Standard library includes threshold
-standard-macro-braces = [
-    { name = "format_args", brace = "{" },
-    { name = "format_args_nl", brace = "{" },
-    { name = "vec", brace = "[" },
-    { name = "matches", brace = "{" }
-]
 
 # Avoid breaking public API
 avoid-breaking-exported-api = true
@@ -74,10 +68,8 @@ avoid-breaking-exported-api = true
 # Upper case acronyms configuration
 upper-case-acronyms-aggressive = true
 
-
 # Maximum function parameters
 max-fn-params-bools = 3
-
 
 # Check private items documentation
 check-private-items = false

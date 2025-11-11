@@ -23,7 +23,7 @@
 //! ## Features
 //!
 //! - **18+ languages** with complete metadata
-//! - **Fast lookups** via optimized HashMaps for extensions, aliases, MIME types
+//! - **Fast lookups** via optimized `HashMaps` for extensions, aliases, MIME types
 //! - **Zero dependencies** on other Singularity crates
 //! - **Content detection** via shebang, patterns, and magic bytes
 //! - **Family grouping** for language categories (BEAM, Systems, Web, etc.)

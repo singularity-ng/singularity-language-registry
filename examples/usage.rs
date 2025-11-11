@@ -10,7 +10,7 @@ use singularity_language_registry::{
     rca_supported_languages,
     ast_grep_supported_languages,
     detect_from_content,
-    detection_confidence,
+    is_detectable,
     languages_by_families,
     LanguageStats,
     same_family,
@@ -70,20 +70,20 @@ fn main() {
     // 6. Content detection
     println!("\n6. Content Detection:");
     let python_content = "#!/usr/bin/env python3\nimport sys\nprint('Hello')";
-    if let Some(lang) = detect_from_content(python_content, None) {
+    if let Some(lang) = detect_from_content(python_content) {
         println!("  Shebang detection -> {}", lang.name);
     }
 
     let dockerfile_content = "FROM rust:latest\nRUN cargo build";
-    if let Some(lang) = detect_from_content(dockerfile_content, None) {
+    if let Some(lang) = detect_from_content(dockerfile_content) {
         println!("  Pattern detection -> {}", lang.name);
     }
 
     // 7. Detection confidence
     println!("\n7. Detection Confidence:");
     let test_path = Path::new("main.rs");
-    let confidence = detection_confidence(test_path, None);
-    println!("  main.rs confidence: {:.2}", confidence);
+    let detectable = is_detectable(test_path, None);
+    println!("  main.rs detectable: {}", if detectable { "Yes" } else { "No" });
 
     // 8. Same family check
     println!("\n8. Same Family Check:");

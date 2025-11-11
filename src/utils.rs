@@ -46,14 +46,12 @@ impl LanguageStats {
 
 /// Check if two languages are in the same family
 pub fn same_family(lang1: &str, lang2: &str) -> bool {
-    let l1 = match LANGUAGE_REGISTRY.get_language(lang1) {
-        Some(l) => l,
-        None => return false,
+    let Some(l1) = LANGUAGE_REGISTRY.get_language(lang1) else {
+        return false;
     };
 
-    let l2 = match LANGUAGE_REGISTRY.get_language(lang2) {
-        Some(l) => l,
-        None => return false,
+    let Some(l2) = LANGUAGE_REGISTRY.get_language(lang2) else {
+        return false;
     };
 
     match (&l1.family, &l2.family) {
@@ -106,9 +104,8 @@ pub enum AnalysisFeature {
 }
 
 pub fn supports_feature(language: &str, feature: AnalysisFeature) -> bool {
-    let lang = match LANGUAGE_REGISTRY.get_language(language) {
-        Some(l) => l,
-        None => return false,
+    let Some(lang) = LANGUAGE_REGISTRY.get_language(language) else {
+        return false;
     };
 
     match feature {

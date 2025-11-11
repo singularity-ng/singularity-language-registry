@@ -1,0 +1,28 @@
+[build]
+# Treat all warnings as errors, enable pedantic mode
+rustflags = [
+    "-D", "warnings",
+    "-W", "clippy::all",
+    "-W", "clippy::pedantic",
+    "-W", "clippy::nursery",
+    "-W", "clippy::cargo",
+
+    # Allow some pedantic lints that are too strict for a library
+    "-A", "clippy::must_use_candidate",
+    "-A", "clippy::missing_errors_doc",
+    "-A", "clippy::missing_panics_doc",
+    "-A", "clippy::module_name_repetitions",
+    "-A", "clippy::uninlined_format_args",
+]
+
+# Optimize for performance in release mode
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
+
+# Development profile for faster compilation
+[profile.dev]
+opt-level = 0
+debug = true
