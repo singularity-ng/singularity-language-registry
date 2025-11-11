@@ -25,8 +25,19 @@
   // Rust-specific configuration
   "rust": {
     "enabled": true,
-    "bumpVersion": "patch" // Auto-bump version in Cargo.toml
+    "bumpVersion": "patch" // Auto-bump version in Cargo.toml for patch updates
   },
+
+  // Auto-release configuration
+  // When version bumps merge to development, auto-release workflow creates release PR to main
+  "prBodyNotes": [
+    "---",
+    "**🤖 Automated Release**: When this PR merges to `development`, the auto-release workflow will:",
+    "- Detect the version bump in Cargo.toml",
+    "- Create a PR from `development` → `main` with release notes",
+    "- Once that PR merges, trigger the release workflow automatically",
+    "- Publish v{{newVersion}} with all artifacts and attestations"
+  ],
 
   // Cargo configuration
   "cargo": {
