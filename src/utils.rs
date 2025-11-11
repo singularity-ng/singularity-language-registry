@@ -11,7 +11,7 @@ pub fn languages_by_families() -> HashMap<String, Vec<&'static LanguageInfo>> {
         if let Some(family) = &lang.family {
             families.entry(family.clone()).or_default().push(lang);
         } else {
-            families.entry("Other".to_string()).or_default().push(lang);
+            families.entry("Other".to_owned()).or_default().push(lang);
         }
     }
 

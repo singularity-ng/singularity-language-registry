@@ -43,7 +43,7 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
             if !lang.rca_supported {
                 capability_mismatches.push(CapabilityMismatch {
                     language: lang_id.clone(),
-                    capability: "RCA".to_string(),
+                    capability: "RCA".to_owned(),
                     registry_says: false,
                     actual: true,
                 });
@@ -59,7 +59,7 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
             if !lang.ast_grep_supported {
                 capability_mismatches.push(CapabilityMismatch {
                     language: lang_id.clone(),
-                    capability: "AST-Grep".to_string(),
+                    capability: "AST-Grep".to_owned(),
                     registry_says: false,
                     actual: true,
                 });
@@ -74,7 +74,7 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
         if lang.rca_supported && !source.rca_languages.contains(&lang.id) {
             capability_mismatches.push(CapabilityMismatch {
                 language: lang.id.clone(),
-                capability: "RCA".to_string(),
+                capability: "RCA".to_owned(),
                 registry_says: true,
                 actual: false,
             });
@@ -83,7 +83,7 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
         if lang.ast_grep_supported && !source.ast_grep_languages.contains(&lang.id) {
             capability_mismatches.push(CapabilityMismatch {
                 language: lang.id.clone(),
-                capability: "AST-Grep".to_string(),
+                capability: "AST-Grep".to_owned(),
                 registry_says: true,
                 actual: false,
             });
@@ -105,30 +105,35 @@ pub fn generate_metadata_report() -> String {
 
     let stats = crate::utils::LanguageStats::calculate();
     report.push_str("## Statistics\n");
-    let _ = writeln!(&mut report, "- Total Languages: {}", stats.total_languages);
-    let _ = writeln!(&mut report, "- RCA Supported: {}", stats.rca_supported);
-    let _ = writeln!(
+    writeln!(&mut report, "- Total Languages: {}", stats.total_languages)
+        .expect("Failed to write to string");
+    writeln!(&mut report, "- RCA Supported: {}", stats.rca_supported)
+        .expect("Failed to write to string");
+    writeln!(
         &mut report,
         "- AST-Grep Supported: {}",
         stats.ast_grep_supported
-    );
-    let _ = writeln!(
+    )
+    .expect("Failed to write to string");
+    writeln!(
         &mut report,
         "- Compiled Languages: {}",
         stats.compiled_languages
-    );
-    let _ = writeln!(
+    )
+    .expect("Failed to write to string");
+    writeln!(
         &mut report,
         "- Interpreted Languages: {}\n",
         stats.interpreted_languages
-    );
+    )
+    .expect("Failed to write to string");
 
     report.push_str("## Language Support Matrix\n\n");
     report.push_str("| Language | Extensions | RCA | AST-Grep | Tree-Sitter | Family |\n");
     report.push_str("|----------|------------|-----|----------|-------------|--------|\n");
 
     for lang in LANGUAGE_REGISTRY.supported_languages() {
-        let _ = writeln!(
+        writeln!(
             &mut report,
             "| {} | {} | {} | {} | {} | {} |",
             lang.name,
@@ -145,7 +150,8 @@ pub fn generate_metadata_report() -> String {
                 "✗"
             },
             lang.family.as_deref().unwrap_or("-"),
-        );
+        )
+        .expect("Failed to write to string");
     }
 
     report
@@ -158,42 +164,42 @@ pub fn get_known_support() -> MetadataSource {
     MetadataSource {
         // RCA supported languages (from rust-code-analysis)
         rca_languages: vec![
-            "rust".to_string(),
-            "c".to_string(),
-            "cpp".to_string(),
-            "go".to_string(),
-            "java".to_string(),
-            "python".to_string(),
-            "javascript".to_string(),
-            "typescript".to_string(),
-            "csharp".to_string(),
-            "kotlin".to_string(),
-            "lua".to_string(),
+            "rust".to_owned(),
+            "c".to_owned(),
+            "cpp".to_owned(),
+            "go".to_owned(),
+            "java".to_owned(),
+            "python".to_owned(),
+            "javascript".to_owned(),
+            "typescript".to_owned(),
+            "csharp".to_owned(),
+            "kotlin".to_owned(),
+            "lua".to_owned(),
         ],
 
         // AST-Grep supported languages
         ast_grep_languages: vec![
-            "rust".to_string(),
-            "python".to_string(),
-            "javascript".to_string(),
-            "typescript".to_string(),
-            "go".to_string(),
-            "java".to_string(),
-            "c".to_string(),
-            "cpp".to_string(),
-            "csharp".to_string(),
-            "kotlin".to_string(),
-            "elixir".to_string(),
-            "erlang".to_string(),
-            "gleam".to_string(),
-            "bash".to_string(),
-            "lua".to_string(),
-            "sql".to_string(),
-            "yaml".to_string(),
-            "json".to_string(),
-            "toml".to_string(),
-            "dockerfile".to_string(),
-            "markdown".to_string(),
+            "rust".to_owned(),
+            "python".to_owned(),
+            "javascript".to_owned(),
+            "typescript".to_owned(),
+            "go".to_owned(),
+            "java".to_owned(),
+            "c".to_owned(),
+            "cpp".to_owned(),
+            "csharp".to_owned(),
+            "kotlin".to_owned(),
+            "elixir".to_owned(),
+            "erlang".to_owned(),
+            "gleam".to_owned(),
+            "bash".to_owned(),
+            "lua".to_owned(),
+            "sql".to_owned(),
+            "yaml".to_owned(),
+            "json".to_owned(),
+            "toml".to_owned(),
+            "dockerfile".to_owned(),
+            "markdown".to_owned(),
         ],
 
         // Tree-sitter has parsers for all our languages

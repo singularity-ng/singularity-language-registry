@@ -21,6 +21,10 @@ fn main() {
     }
 }
 
+/// Validates that language registry metadata matches actual library capabilities.
+///
+/// This function checks that all languages registered in the metadata
+/// are actually supported by the underlying analysis libraries.
 fn validate_metadata() {
     println!("cargo:warning=Validating language registry metadata...");
 
@@ -34,6 +38,10 @@ fn validate_metadata() {
     println!("cargo:warning=Metadata validation complete");
 }
 
+/// Generates a markdown report of supported languages and their metadata.
+///
+/// Creates a LANGUAGES.md file with the current support matrix for all
+/// registered languages and their analysis library support status.
 fn generate_report() {
     println!("cargo:warning=Generating metadata report...");
 
