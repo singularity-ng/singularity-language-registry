@@ -156,10 +156,9 @@
           inherit singularity-language-registry;
 
           # Format check
-          fmt = pkgs.runCommand "fmt-check" {} ''
-            ${rustToolchain}/bin/cargo fmt --manifest-path ${./Cargo.toml} -- --check
-            touch $out
-          '';
+          fmt = craneLib.cargoFmt (commonArgs // {
+            cargoArtifacts = null;
+          });
 
           # Clippy check with pedantic mode
           clippy = craneLib.cargoClippy (commonArgs // {
