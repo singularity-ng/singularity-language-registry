@@ -37,8 +37,6 @@ disallowed-names = [
 # Minimum rust version
 msrv = "1.91.0"
 
-# Maximum allowed cyclomatic complexity
-cyclomatic-complexity-threshold = 10
 
 # Maximum trait bounds
 max-trait-bounds = 3
@@ -55,11 +53,9 @@ allow-print-in-tests = true
 # Allow unwrap in tests
 allow-unwrap-in-tests = true
 
-# Maximum struct fields
-max-struct-fields = 20
+# Maximum struct bools
+max-struct-bools = 3
 
-# Maximum include depth for modules
-max-include-depth = 5
 
 # Allow certain attributes without reason
 allowed-duplicate-crates = []
@@ -78,17 +74,11 @@ avoid-breaking-exported-api = true
 # Upper case acronyms configuration
 upper-case-acronyms-aggressive = true
 
-# Allow certain wildcard dependencies
-allow-wildcard-dependencies = false
 
 # Maximum function parameters
 max-fn-params-bools = 3
 
-# Warn on all caps names
-warn-on-all-wildcard-imports = true
 
 # Check private items documentation
 check-private-items = false
 
-# Enforced module level documentation
-missing-docs-in-crate-items = true
