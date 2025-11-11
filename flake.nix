@@ -44,6 +44,7 @@
           nativeBuildInputs = with pkgs; [
             rustToolchain
             pkg-config
+            clang
           ];
         };
 
