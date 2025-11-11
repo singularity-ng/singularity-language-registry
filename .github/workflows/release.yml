@@ -494,9 +494,71 @@ jobs:
             **/*.zip
             BINARY_SHA256SUMS
 
+  update-latest:
+    name: Update 'latest' Tag
+    needs: [validate, create-release, upload-artifacts]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update latest tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Delete old latest tag if it exists
+          git tag -d latest 2>/dev/null || true
+          git push origin :refs/tags/latest 2>/dev/null || true
+
+          # Create new latest tag pointing to current release
+          git tag -a latest -m "Latest release (v${{ needs.validate.outputs.version }})"
+          git push origin latest
+
+      - name: Update latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Delete old "latest" release if exists
+          gh release delete latest --yes 2>/dev/null || true
+
+          # Create latest release pointing to same artifacts
+          gh release create latest \
+            --title "Latest Release (v${{ needs.validate.outputs.version }})" \
+            --notes "This release always points to the latest stable version.
+
+          **Current Version**: v${{ needs.validate.outputs.version }}
+
+          For version-specific releases, see: https://github.com/${{ github.repository }}/releases
+
+          ## Quick Install
+
+          ### Mix (Elixir)
+          \`\`\`elixir
+          # Always use latest
+          {:singularity_language_registry, git: \"https://github.com/${{ github.repository }}\", tag: \"latest\"}
+
+          # Or pin to specific version
+          {:singularity_language_registry, git: \"https://github.com/${{ github.repository }}\", tag: \"v${{ needs.validate.outputs.version }}\"}
+          \`\`\`
+
+          ### Download Binary
+          \`\`\`bash
+          # Linux
+          curl -L https://github.com/${{ github.repository }}/releases/download/latest/singularity-language-registry-linux-x64.tar.gz | tar xz
+
+          # macOS ARM
+          curl -L https://github.com/${{ github.repository }}/releases/download/latest/singularity-language-registry-macos-arm64.tar.gz | tar xz
+          \`\`\`
+
+          See artifacts below for all platforms and checksums." \
+            --latest
+
   notify:
     name: Notify Release
-    needs: [validate, build-crate-package, create-release]
+    needs: [validate, build-crate-package, create-release, update-latest]
     runs-on: ubuntu-latest
     if: always()
     steps:
