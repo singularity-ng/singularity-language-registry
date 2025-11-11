@@ -26,6 +26,7 @@ use std::sync::LazyLock;
 /// - ✅ Language features: `Result<`, `async`, `await`, `?`, `try:`, `catch`
 /// - ❌ Libraries: `kafka`, `reqwest`, `express` (these go in `CentralCloud`!)
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[non_exhaustive]
 pub struct PatternSignatures {
     /// Error handling SYNTAX (language keywords, not libraries)
     /// Examples: `Result<`, `?`, `unwrap` for Rust, `try:`, `except` for Python
@@ -50,6 +51,7 @@ pub struct PatternSignatures {
     clippy::struct_excessive_bools,
     reason = "Boolean flags for language capabilities are semantically clear and independent"
 )]
+#[non_exhaustive]
 pub struct LanguageInfo {
     /// Unique language identifier (e.g., `"rust"`, `"elixir"`)
     pub id: String,

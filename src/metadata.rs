@@ -7,6 +7,7 @@ use crate::registry::LANGUAGE_REGISTRY;
 
 /// Metadata source for language capabilities
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub struct MetadataSource {
     pub tree_sitter_languages: Vec<String>,
     pub rca_languages: Vec<String>,
@@ -15,13 +16,16 @@ pub struct MetadataSource {
 
 /// Validation result for metadata consistency
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct MetadataValidation {
     pub registry_only: Vec<String>,
     pub missing_from_registry: Vec<String>,
     pub capability_mismatches: Vec<CapabilityMismatch>,
 }
 
+/// Capability mismatch between registry and actual library support
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct CapabilityMismatch {
     pub language: String,
     pub capability: String,
@@ -98,6 +102,10 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
 }
 
 /// Generate metadata report for documentation
+#[allow(
+    clippy::let_underscore_must_use,
+    reason = "Writing to String via write! is infallible - cannot fail in practice"
+)]
 pub fn generate_metadata_report() -> String {
     use std::fmt::Write;
 
@@ -105,35 +113,30 @@ pub fn generate_metadata_report() -> String {
 
     let stats = crate::utils::LanguageStats::calculate();
     report.push_str("## Statistics\n");
-    writeln!(&mut report, "- Total Languages: {}", stats.total_languages)
-        .expect("Failed to write to string");
-    writeln!(&mut report, "- RCA Supported: {}", stats.rca_supported)
-        .expect("Failed to write to string");
-    writeln!(
+    let _ = writeln!(&mut report, "- Total Languages: {}", stats.total_languages);
+    let _ = writeln!(&mut report, "- RCA Supported: {}", stats.rca_supported);
+    let _ = writeln!(
         &mut report,
         "- AST-Grep Supported: {}",
         stats.ast_grep_supported
-    )
-    .expect("Failed to write to string");
-    writeln!(
+    );
+    let _ = writeln!(
         &mut report,
         "- Compiled Languages: {}",
         stats.compiled_languages
-    )
-    .expect("Failed to write to string");
-    writeln!(
+    );
+    let _ = writeln!(
         &mut report,
         "- Interpreted Languages: {}\n",
         stats.interpreted_languages
-    )
-    .expect("Failed to write to string");
+    );
 
     report.push_str("## Language Support Matrix\n\n");
     report.push_str("| Language | Extensions | RCA | AST-Grep | Tree-Sitter | Family |\n");
     report.push_str("|----------|------------|-----|----------|-------------|--------|\n");
 
     for lang in LANGUAGE_REGISTRY.supported_languages() {
-        writeln!(
+        let _ = writeln!(
             &mut report,
             "| {} | {} | {} | {} | {} | {} |",
             lang.name,
@@ -150,8 +153,7 @@ pub fn generate_metadata_report() -> String {
                 "✗"
             },
             lang.family.as_deref().unwrap_or("-"),
-        )
-        .expect("Failed to write to string");
+        );
     }
 
     report

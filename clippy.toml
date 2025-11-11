@@ -45,6 +45,9 @@ type-complexity-threshold = 150
 # Industry: 1 | Enterprise: 2 | Safety-critical: 3
 min-ident-chars-threshold = 3
 
+# Allow common short identifiers (std library, common iterators, domain terms)
+allowed-idents-below-min-chars = ["std", "env", "io", "fs", "id", "ext", "url", "uri", "key", "idx"]
+
 # Maximum single-char binding names
 # Industry: 4 | Enterprise: 2 | Safety-critical: 1
 single-char-binding-names-threshold = 1

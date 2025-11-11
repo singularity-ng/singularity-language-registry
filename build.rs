@@ -3,10 +3,16 @@
 //! This can be used to ensure registry metadata matches actual library capabilities.
 //! Run with: cargo build --features validate-metadata
 
-use std::env;
-use std::fs;
-use std::path::Path;
+#![allow(
+    clippy::min_ident_chars,
+    reason = "Build scripts use standard short names like env, fs, io"
+)]
 
+use std::{env, fs, io, path::Path};
+
+/// Build script entry point
+///
+/// Validates metadata and generates reports based on environment variables.
 fn main() {
     println!("cargo:rerun-if-changed=src/registry.rs");
 
@@ -17,7 +23,9 @@ fn main() {
 
     // Generate metadata report if requested
     if env::var("GENERATE_METADATA_REPORT").is_ok() {
-        generate_report();
+        if let Err(error) = generate_report() {
+            println!("cargo:warning=Failed to generate report: {error}");
+        }
     }
 }
 
@@ -42,7 +50,11 @@ fn validate_metadata() {
 ///
 /// Creates a LANGUAGES.md file with the current support matrix for all
 /// registered languages and their analysis library support status.
-fn generate_report() {
+///
+/// # Errors
+///
+/// Returns an error if the file cannot be written to disk.
+fn generate_report() -> Result<(), io::Error> {
     println!("cargo:warning=Generating metadata report...");
 
     // This would generate a LANGUAGES.md file with current support matrix
@@ -69,6 +81,7 @@ To update library support:
 3. Fix any inconsistencies reported
 ";
 
-    fs::write(report_path, report).expect("Failed to write report");
+    fs::write(report_path, report)?;
     println!("cargo:warning=Report written to LANGUAGES.md");
+    Ok(())
 }
