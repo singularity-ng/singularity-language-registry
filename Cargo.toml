@@ -72,8 +72,7 @@ exclude = [
     "WORKFLOW_GUIDE.md",
     "CHANGELOG.md",
 
-    # AI documentation (repo version for developers, .release version for users)
-    "AGENTS.md",
+    # AI documentation - keep AGENTS.md.release excluded, AGENTS.md is included in crate
     "AGENTS.md.release",
 
     # IDE
