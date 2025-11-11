@@ -156,9 +156,7 @@
           inherit singularity-language-registry;
 
           # Format check
-          fmt = craneLib.cargoFmt (commonArgs // {
-            cargoArtifacts = null;
-          });
+          fmt = craneLib.cargoFmt commonArgs;
 
           # Clippy check with pedantic mode
           clippy = craneLib.cargoClippy (commonArgs // {
