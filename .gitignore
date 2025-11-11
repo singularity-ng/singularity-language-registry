@@ -43,3 +43,8 @@ result-*
 # Nix build artifacts
 *.nar
 *.nar.xz
+
+# Local secrets - NEVER COMMIT
+.envrc.local
+.env.local
+.secrets

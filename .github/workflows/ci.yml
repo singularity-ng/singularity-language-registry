@@ -233,6 +233,8 @@ jobs:
         with:
           cache-name: "singularity-lang-reg"
           visibility: "public"
+        env:
+          FLAKEHUB_PUSH_TOKEN: ${{ secrets.FLAKEHUB_PUSH_TOKEN }}
 
       # Layer 4: Cachix binary cache (optional - requires secret)
       - name: Setup Cachix Cache
