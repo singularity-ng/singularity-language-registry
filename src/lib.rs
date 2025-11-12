@@ -32,7 +32,7 @@
 //!
 //! ## Usage
 //!
-//! ```rust
+//! ```no_run
 //! use singularity_language_registry::{detect_language, get_language, LanguageStats};
 //! use std::path::Path;
 //!

@@ -11,7 +11,13 @@
     "family": "BEAM",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "erlang",
@@ -25,7 +31,13 @@
     "family": "BEAM",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "gleam",
@@ -39,7 +51,13 @@
     "family": "BEAM",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "rust",
@@ -73,7 +91,13 @@
     "family": "C-like",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "cpp",
@@ -87,7 +111,13 @@
     "family": "C-like",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "javascript",
@@ -101,7 +131,13 @@
     "family": "Web",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "typescript",
@@ -115,7 +151,13 @@
     "family": "Web",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "python",
@@ -129,7 +171,13 @@
     "family": "Scripting",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "java",
@@ -143,7 +191,13 @@
     "family": "JVM",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "csharp",
@@ -157,7 +211,13 @@
     "family": "CLR",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "go",
@@ -171,7 +231,13 @@
     "family": "Systems",
     "is_compiled": true,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "lua",
@@ -185,7 +251,13 @@
     "family": "Scripting",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "bash",
@@ -199,7 +271,13 @@
     "family": "Shell",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "json",
@@ -213,7 +291,13 @@
     "family": "Data",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "yaml",
@@ -227,7 +311,13 @@
     "family": "Data",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "toml",
@@ -241,7 +331,13 @@
     "family": "Data",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "markdown",
@@ -255,7 +351,13 @@
     "family": "Documentation",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "dockerfile",
@@ -269,7 +371,13 @@
     "family": "Infrastructure",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   },
   {
     "id": "sql",
@@ -283,6 +391,12 @@
     "family": "Database",
     "is_compiled": false,
     "language_type": "programming",
-    "pattern_signatures": {}
+    "pattern_signatures": {
+      "error_handling_syntax": [],
+      "async_syntax": [],
+      "testing_syntax": [],
+      "pattern_matching_syntax": [],
+      "module_syntax": []
+    }
   }
 ]

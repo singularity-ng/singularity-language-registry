@@ -149,6 +149,7 @@ fn main() {
     println!("\n14. Capability Registration:");
     #[allow(
         clippy::let_underscore_must_use,
+        clippy::let_underscore_untyped,
         reason = "Example demonstrates capability registration"
     )]
     let _ = set_language_capability("rust", LanguageCapability::Linting, true);
