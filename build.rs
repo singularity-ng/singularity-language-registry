@@ -8,35 +8,55 @@
 //! This ensures Singularity language definitions stay consistent with GitHub's standard.
 //! Renovate automatically alerts when Linguist updates (weekly schedule).
 //!
-//! ## Future: Extended Linguist Integration (Option 2 Roadmap)
+//! ## Extended Linguist Integration (Option 2 - In Progress)
 //!
-//! In the future, this build script can be extended to automatically synchronize with Linguist:
-//!
-//! ### Phase 1: Language Definitions (DONE)
+//! ### Phase 1: Language Definitions (✅ DONE)
 //! - ✅ `languages.yml` synced to registry
 //! - ✅ `supported_in_singularity` flag for explicit support
-//! - ✅ Weekly Renovate alerts for updates
+//! - ✅ Weekly Renovate alerts
 //!
-//! ### Phase 2: File Classification (READY FOR IMPLEMENTATION)
-//! - Extract `vendor.yml` patterns from Linguist
-//! - Extract `generated.rb` heuristics from Linguist
-//! - Auto-generate:
-//!   - Vendored path patterns (`node_modules/`, `vendor/`, `.yarn/`, etc.)
-//!   - Generated file extensions (`.pb.rs`, `.generated.ts`, etc.)
-//!   - Generated file content markers
-//! - Result: `FileClassifier` is kept in sync with Linguist
+//! ### Phase 2: File Classification (🔧 IN PROGRESS)
 //!
-//! ### Phase 3: Detection Heuristics (Future)
-//! - Extract `heuristics.yml` from Linguist
-//! - Generate language detection rules for ambiguous extensions
-//! - Support fallback detection when extension alone is unclear
+//! #### Implementation Step 1: Manual Synchronization (Current)
+//! Run the synchronization script when Linguist updates:
+//! ```bash
+//! python3 scripts/sync_linguist_patterns.py > src/file_classifier_generated.rs
+//! cargo test
+//! git add src/file_classifier_generated.rs
+//! git commit -m "chore(linguist): sync file classification patterns"
+//! ```
 //!
-//! ### Implementation
-//! When Renovate detects a Linguist update (weekly):
-//! 1. Review the changes in the PR
-//! 2. If significant: regenerate file classification and language definitions
-//! 3. Run full test suite
-//! 4. Merge and release new registry version
+//! #### Implementation Step 2: Automated Synchronization (Future)
+//! This build script can be extended to:
+//! ```bash
+//! cargo xtask sync-linguist
+//! ```
+//!
+//! Which will:
+//! 1. Download `vendor.yml` from Linguist
+//! 2. Download `generated.rb` from Linguist
+//! 3. Parse and extract patterns
+//! 4. Generate Rust code arrays
+//! 5. Update `src/file_classifier_generated.rs`
+//! 6. Run tests to validate
+//!
+//! #### Patterns Extracted
+//! - **Vendored**: `node_modules/`, `vendor/`, `.yarn/`, `Pods/`, `dist/`, `build/`
+//! - **Generated**: `.pb.rs`, `.pb.go`, `.generated.ts`, `.designer.cs`, `.meta`
+//! - **Binary**: `.png`, `.jpg`, `.zip`, `.exe`, `.dll`, `.pdf`
+//!
+//! ### Phase 3: Detection Heuristics (📋 PLANNED)
+//! - Extract `heuristics.yml` from Linguist (35KB)
+//! - Generate fallback language detection for ambiguous extensions
+//! - Support: `.pl` (Perl vs Prolog), `.m` (Objective-C vs Matlab), etc.
+//!
+//! ### Maintenance Workflow
+//! When Renovate creates a Linguist update PR:
+//! 1. Review language definition changes
+//! 2. Run: `python3 scripts/sync_linguist_patterns.py`
+//! 3. Run: `cargo test`
+//! 4. Commit changes: `git add . && git commit`
+//! 5. Merge and create release
 //!
 //! This can be used to ensure registry metadata matches actual library capabilities.
 //! Run with: cargo build --features validate-metadata
