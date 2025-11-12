@@ -43,6 +43,23 @@
   // Package Rules - ordered by priority
   "packageRules": [
     // ===================
+    // GitHub Linguist (Language Registry Source)
+    // ===================
+    {
+      "description": "🔤 GitHub Linguist language list updates",
+      "matchDatasources": ["github-tags"],
+      "matchPackagePatterns": ["github-linguist/linguist"],
+      "schedule": ["weekly"],
+      "labels": ["linguist", "language-registry", "dependencies"],
+      "prPriority": 5,
+      "automerge": false,  // Manual review for language definition changes
+      "commitMessagePrefix": "chore(linguist):",
+      "prBodyNotes": [
+        "**⚠️ Language Registry Update**: The GitHub Linguist language definitions have been updated. Review the changes to the language list and update Singularity's supported languages accordingly."
+      ]
+    },
+
+    // ===================
     // Security Updates
     // ===================
     {

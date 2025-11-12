@@ -1,4 +1,20 @@
-//! Build script for validating language metadata
+//! Build script for validating language metadata and Linguist integration
+//!
+//! ## Language Registry Source
+//!
+//! The language registry is derived from GitHub Linguist's authoritative language list:
+//! <https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml>
+//!
+//! This ensures Singularity language definitions stay consistent with GitHub's standard.
+//! Renovate automatically alerts when Linguist updates (weekly schedule).
+//!
+//! ## Future: Automatic Linguist Synchronization
+//!
+//! In the future, this build script can be extended to:
+//! 1. Download Linguist's languages.yml at build time
+//! 2. Generate Rust code for all defined languages
+//! 3. Mark only explicitly supported languages as `supported_in_singularity: true`
+//! 4. Auto-update the registry when Linguist changes
 //!
 //! This can be used to ensure registry metadata matches actual library capabilities.
 //! Run with: cargo build --features validate-metadata
