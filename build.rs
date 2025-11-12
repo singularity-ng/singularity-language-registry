@@ -8,13 +8,35 @@
 //! This ensures Singularity language definitions stay consistent with GitHub's standard.
 //! Renovate automatically alerts when Linguist updates (weekly schedule).
 //!
-//! ## Future: Automatic Linguist Synchronization
+//! ## Future: Extended Linguist Integration (Option 2 Roadmap)
 //!
-//! In the future, this build script can be extended to:
-//! 1. Download Linguist's languages.yml at build time
-//! 2. Generate Rust code for all defined languages
-//! 3. Mark only explicitly supported languages as `supported_in_singularity: true`
-//! 4. Auto-update the registry when Linguist changes
+//! In the future, this build script can be extended to automatically synchronize with Linguist:
+//!
+//! ### Phase 1: Language Definitions (DONE)
+//! - ✅ `languages.yml` synced to registry
+//! - ✅ `supported_in_singularity` flag for explicit support
+//! - ✅ Weekly Renovate alerts for updates
+//!
+//! ### Phase 2: File Classification (READY FOR IMPLEMENTATION)
+//! - Extract `vendor.yml` patterns from Linguist
+//! - Extract `generated.rb` heuristics from Linguist
+//! - Auto-generate:
+//!   - Vendored path patterns (`node_modules/`, `vendor/`, `.yarn/`, etc.)
+//!   - Generated file extensions (`.pb.rs`, `.generated.ts`, etc.)
+//!   - Generated file content markers
+//! - Result: `FileClassifier` is kept in sync with Linguist
+//!
+//! ### Phase 3: Detection Heuristics (Future)
+//! - Extract `heuristics.yml` from Linguist
+//! - Generate language detection rules for ambiguous extensions
+//! - Support fallback detection when extension alone is unclear
+//!
+//! ### Implementation
+//! When Renovate detects a Linguist update (weekly):
+//! 1. Review the changes in the PR
+//! 2. If significant: regenerate file classification and language definitions
+//! 3. Run full test suite
+//! 4. Merge and release new registry version
 //!
 //! This can be used to ensure registry metadata matches actual library capabilities.
 //! Run with: cargo build --features validate-metadata
