@@ -111,7 +111,8 @@ anyhow = "1.0"
 lazy_static = "1.4"
 
 # HTTP client for fetching from Linguist (used by tools)
-reqwest = { version = "0.11", features = ["json"], optional = true }
+# Use rustls instead of default-tls (OpenSSL) for pure-Rust TLS without system dependencies
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false, optional = true }
 tokio = { version = "1", features = ["full"], optional = true }
 
 # Regex for pattern extraction
