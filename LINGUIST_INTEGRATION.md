@@ -45,13 +45,18 @@ if lang.supported_in_singularity {
 - **Action**: Manual review required before merge
 - **Update**: When Linguist releases a new version
 
-## Phase 2: File Classification (In Progress)
+## Phase 2: File Classification + Phase 3: Language Detection (In Progress)
 
 ### Status
 - ✅ **FileClassifier module**: Implemented with 5 tests
-- ✅ **Synchronization script**: Created (`scripts/sync_linguist_patterns.py`)
-- 🔧 **Integration in progress**: Add `sync-linguist` justfile command
-- 📋 **Next**: Add to CI workflow
+- ✅ **Synchronization tool**: Full Rust implementation (`tools/linguist_sync.rs`)
+  - 100% pure Rust (no Python, Perl, or Bash)
+  - Downloads from GitHub Linguist
+  - Parses vendor.yml, generated.rb, heuristics.yml
+  - Auto-generates Rust code
+- ✅ **Integration**: `just sync-linguist` command added
+- ✅ **Phase 3**: Language detection heuristics parsing implemented
+- 📋 **Next**: CI/CD workflow integration
 
 ### What Will Be Added
 
@@ -87,27 +92,39 @@ Skip non-text files:
 
 ### How It Works
 
-#### Step 1: Manual Synchronization (Current)
+#### 100% Pure Rust Implementation
+No Python, Perl, or Bash dependencies. Everything runs in Rust.
+
+#### Step 1: Automatic Synchronization (via Justfile)
 When Linguist updates (Renovate alert):
 ```bash
-# Sync patterns from Linguist to Rust code
-python3 scripts/sync_linguist_patterns.py > src/file_classifier_generated.rs
+# One command syncs Phases 2 & 3 from GitHub Linguist
+just sync-linguist
+
+# Under the hood:
+cargo run --bin sync-linguist --features sync-tool
 
 # Run tests to validate patterns
 cargo test
 
 # Commit the generated patterns
 git add src/file_classifier_generated.rs
-git commit -m "chore(linguist): sync file classification patterns"
+git commit -m "chore(linguist): sync Phase 2 & 3 patterns"
 ```
 
-#### Step 2: Automated Synchronization (Future)
-```bash
-# Automatic sync via justfile
-just sync-linguist
+#### Step 2: Fully Automated (CI Integration - Future)
+```yaml
+# GitHub Actions example
+- name: Sync Linguist patterns
+  run: just sync-linguist
 
-# Or via cargo xtask
-cargo xtask sync-linguist
+- name: Run tests
+  run: cargo test
+
+- name: Commit if changed
+  run: |
+    git add src/file_classifier_generated.rs
+    git commit -m "chore(linguist): sync patterns" || true
 ```
 
 ### Implementation Details

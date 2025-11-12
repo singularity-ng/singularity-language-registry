@@ -13,9 +13,9 @@ use std::sync::atomic::Ordering;
 
 use singularity_language_registry::{
     ast_grep_supported_languages, detect_from_content, detect_language, get_language,
-    get_language_by_alias, is_detectable, languages_by_families, rca_supported_languages,
-    recommended_linters, same_family, supported_languages, supports_feature, AnalysisFeature,
-    LanguageStats,
+    get_language_by_alias, is_detectable, languages_by_families, languages_with_capability,
+    rca_supported_languages, recommended_linters, same_family, set_language_capability,
+    supported_languages, supports_feature, AnalysisFeature, LanguageCapability, LanguageStats,
 };
 use std::path::Path;
 
@@ -141,6 +141,12 @@ fn main() {
     println!("\n13. AST-Grep Supported Languages:");
     let ast = ast_grep_supported_languages();
     println!("  AST-Grep supports {} languages", ast.len());
+
+    // 14. Capability registration
+    println!("\n14. Capability Registration:");
+    let _ = set_language_capability("rust", LanguageCapability::Linting, true);
+    let linting_langs = languages_with_capability(LanguageCapability::Linting);
+    println!("  Languages advertising linting: {}", linting_langs.len());
 
     println!("\n=== Examples Complete ===");
 }

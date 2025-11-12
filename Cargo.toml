@@ -102,6 +102,7 @@ crate-type = ["rlib"]
 # Serialization (for language definitions)
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_yaml = "0.9"
 
 # Error handling
 anyhow = "1.0"
@@ -109,9 +110,22 @@ anyhow = "1.0"
 # Standard library utilities
 lazy_static = "1.4"
 
+# HTTP client for fetching from Linguist (used by tools)
+reqwest = { version = "0.11", features = ["json"], optional = true }
+tokio = { version = "1", features = ["full"], optional = true }
+
+# Regex for pattern extraction
+regex = { version = "1.10", optional = true }
+
+[[bin]]
+name = "sync-linguist"
+path = "tools/linguist_sync.rs"
+required-features = ["sync-tool"]
+
 [features]
 default = []
 validate-metadata = []
+sync-tool = ["reqwest", "tokio", "regex"]
 
 [build-dependencies]
 

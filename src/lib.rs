@@ -60,12 +60,16 @@ pub mod registry;
 pub mod utils;
 
 // Core registry exports
-pub use registry::{LanguageInfo, LanguageRegistry, PatternSignatures, LANGUAGE_REGISTRY};
+pub use registry::{
+    LanguageCapability, LanguageInfo, LanguageRegistry, PatternSignatures, LANGUAGE_REGISTRY,
+};
 
 // Convenience functions for direct access
 pub use registry::{
     ast_grep_supported_languages, detect_language, get_language, get_language_by_alias,
-    get_language_by_mime_type, rca_supported_languages, supported_languages,
+    get_language_by_mime_type, languages_with_capability, rca_supported_languages,
+    register_capability_support, register_rca_capabilities, set_language_capability,
+    supported_languages,
 };
 
 // Detection utilities

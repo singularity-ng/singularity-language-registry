@@ -15,7 +15,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::LazyLock;
 
 /// Language-level pattern signatures (syntax/keywords only, NOT libraries!)
@@ -92,6 +92,53 @@ pub struct LanguageInfo {
     /// Pattern signatures for cross-language pattern detection
     #[serde(default)]
     pub pattern_signatures: PatternSignatures,
+    /// Dynamic capability bits controlled by downstream engines
+    #[serde(skip)]
+    pub capabilities: AtomicU32,
+}
+
+/// Explicit capability bits that downstream engines can toggle.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum LanguageCapability {
+    RCA = 0,
+    ASTGrep = 1,
+    Linting = 2,
+    Parsing = 3,
+    CodeEngine = 4,
+}
+
+impl LanguageCapability {
+    /// Bitmask for a capability.
+    #[must_use]
+    pub const fn bit(self) -> u32 {
+        1 << (self as u8)
+    }
+}
+
+impl LanguageInfo {
+    /// Check if a capability bit is enabled.
+    #[must_use]
+    pub fn has_capability(&self, capability: LanguageCapability) -> bool {
+        (self.capabilities.load(Ordering::Relaxed) & capability.bit()) != 0
+    }
+
+    /// Enable or disable a capability.
+    pub fn set_capability(&self, capability: LanguageCapability, enabled: bool) {
+        if enabled {
+            let _ = self
+                .capabilities
+                .fetch_or(capability.bit(), Ordering::Relaxed);
+        } else {
+            let _ = self
+                .capabilities
+                .fetch_and(!capability.bit(), Ordering::Relaxed);
+        }
+
+        if let LanguageCapability::RCA = capability {
+            self.rca_supported.store(enabled, Ordering::Relaxed);
+        }
+    }
 }
 
 /// Central language registry with optimized lookups
@@ -147,6 +194,7 @@ impl LanguageRegistry {
             is_compiled: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -166,6 +214,7 @@ impl LanguageRegistry {
             is_compiled: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -182,6 +231,7 @@ impl LanguageRegistry {
             is_compiled: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // Systems Programming Languages
@@ -226,6 +276,7 @@ impl LanguageRegistry {
                     "crate::".to_owned(),
                 ],
             },
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -242,6 +293,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -264,6 +316,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // Web Technologies
@@ -284,6 +337,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -303,6 +357,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // High-Level Languages
@@ -323,6 +378,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // JVM Languages
@@ -340,6 +396,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // Scripting Languages
@@ -361,6 +418,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -377,6 +435,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // Scripting Languages
@@ -394,6 +453,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -410,6 +470,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // Data Formats
@@ -427,6 +488,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -443,6 +505,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -459,6 +522,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // Documentation
@@ -476,6 +540,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         // Infrastructure
@@ -493,6 +558,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
 
         self.register_language(LanguageInfo {
@@ -509,6 +575,7 @@ impl LanguageRegistry {
             supported_in_singularity: true,
             language_type: "programming".to_owned(),
             pattern_signatures: PatternSignatures::default(),
+            capabilities: AtomicU32::new(0),
         });
     }
 
@@ -654,13 +721,8 @@ impl LanguageRegistry {
     /// # Errors
     ///
     /// Returns an error if the language is not found in the registry.
-    pub fn set_rca_support(&mut self, language_id: &str, supported: bool) -> Result<(), String> {
-        if let Some(language) = self.languages.get_mut(language_id) {
-            language.rca_supported.store(supported, Ordering::Relaxed);
-            Ok(())
-        } else {
-            Err(format!("Language '{language_id}' not found in registry"))
-        }
+    pub fn set_rca_support(&self, language_id: &str, supported: bool) -> Result<(), String> {
+        self.set_language_capability(language_id, LanguageCapability::RCA, supported)
     }
 
     /// Register RCA capabilities from analysis engine
@@ -671,21 +733,50 @@ impl LanguageRegistry {
     /// # Errors
     ///
     /// Returns an error if any of the specified languages are not found.
-    pub fn register_rca_capabilities(
-        &mut self,
+    pub fn register_rca_capabilities(&self, supported_languages: &[&str]) -> Result<(), String> {
+        self.register_capability_support(LanguageCapability::RCA, supported_languages)
+    }
+
+    /// Enable or disable a specific capability across languages.
+    pub fn register_capability_support(
+        &self,
+        capability: LanguageCapability,
         supported_languages: &[&str],
     ) -> Result<(), String> {
-        // First, set all languages to not supported
-        for language in self.languages.values_mut() {
-            language.rca_supported.store(false, Ordering::Relaxed);
+        for language in self.languages.values() {
+            language.set_capability(capability, false);
         }
 
-        // Then set the supported ones to true
         for &language_id in supported_languages {
-            self.set_rca_support(language_id, true)?;
+            self.set_language_capability(language_id, capability, true)?;
         }
 
         Ok(())
+    }
+
+    /// Enable/disable a capability for a single language.
+    pub fn set_language_capability(
+        &self,
+        language_id: &str,
+        capability: LanguageCapability,
+        enabled: bool,
+    ) -> Result<(), String> {
+        let language = self
+            .languages
+            .get(language_id)
+            .ok_or_else(|| format!("Language '{language_id}' not found in registry"))?;
+
+        language.set_capability(capability, enabled);
+        Ok(())
+    }
+
+    /// Get languages that expose a capability.
+    #[must_use]
+    pub fn languages_with_capability(&self, capability: LanguageCapability) -> Vec<&LanguageInfo> {
+        self.languages
+            .values()
+            .filter(|lang| lang.has_capability(capability))
+            .collect()
     }
 
     /// Get mutable reference to language info for advanced operations
@@ -757,21 +848,29 @@ pub fn get_language_by_mime_type(mime_type: &str) -> Option<&'static LanguageInf
 ///
 /// Returns an error if any of the specified languages are not found.
 pub fn register_rca_capabilities(supported_languages: &[&str]) -> Result<(), String> {
-    // First, set all languages to not supported
-    for language in LANGUAGE_REGISTRY.supported_languages() {
-        language.rca_supported.store(false, Ordering::Relaxed);
-    }
+    LANGUAGE_REGISTRY.register_capability_support(LanguageCapability::RCA, supported_languages)
+}
 
-    // Then set the supported ones to true
-    for &language_id in supported_languages {
-        if let Some(language) = LANGUAGE_REGISTRY.get_language(language_id) {
-            language.rca_supported.store(true, Ordering::Relaxed);
-        } else {
-            return Err(format!("Language '{language_id}' not found in registry"));
-        }
-    }
+pub fn register_capability_support(
+    capability: LanguageCapability,
+    supported_languages: &[&str],
+) -> Result<(), String> {
+    LANGUAGE_REGISTRY.register_capability_support(capability, supported_languages)
+}
 
-    Ok(())
+/// Enable or disable a capability for a single language.
+pub fn set_language_capability(
+    language_id: &str,
+    capability: LanguageCapability,
+    enabled: bool,
+) -> Result<(), String> {
+    LANGUAGE_REGISTRY.set_language_capability(language_id, capability, enabled)
+}
+
+/// Get languages that expose a capability.
+#[must_use]
+pub fn languages_with_capability(capability: LanguageCapability) -> Vec<&'static LanguageInfo> {
+    LANGUAGE_REGISTRY.languages_with_capability(capability)
 }
 
 #[cfg(test)]
@@ -825,6 +924,24 @@ mod tests {
 
         // Test non-existent language
         assert!(get_language("nonexistent").is_none());
+    }
+
+    #[test]
+    fn test_capability_registration() {
+        let capability = LanguageCapability::Linting;
+        let lang = get_language("rust").unwrap();
+        assert!(!lang.has_capability(capability));
+
+        set_language_capability("rust", capability, true).unwrap();
+        let rust = get_language("rust").unwrap();
+        assert!(rust.has_capability(capability));
+        assert!(languages_with_capability(capability)
+            .iter()
+            .any(|language| language.id == "rust"));
+
+        set_language_capability("rust", capability, false).unwrap();
+        let rust = get_language("rust").unwrap();
+        assert!(!rust.has_capability(capability));
     }
 
     #[test]

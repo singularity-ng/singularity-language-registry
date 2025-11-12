@@ -45,7 +45,7 @@
             rustToolchain
             pkg-config
             clang
-            lld  # Required for Rust linker (-fuse-ld=lld)
+            lld # Required for Rust linker (-fuse-ld=lld)
           ];
         };
 
@@ -98,29 +98,29 @@
 
           nativeBuildInputs = with pkgs; [
             # Core Rust toolchain (always needed)
-            rustToolchain      # cargo, rustc, rustfmt, clippy, rust-analyzer
-            rust-analyzer      # IDE support
+            rustToolchain # cargo, rustc, rustfmt, clippy, rust-analyzer
+            rust-analyzer # IDE support
 
             # Essential cargo tools (daily use)
-            cargo-edit         # cargo add/rm/upgrade commands
-            cargo-watch        # Auto-run on file changes
-            cargo-nextest      # Faster test runner
-            cargo-expand       # Macro debugging
+            cargo-edit # cargo add/rm/upgrade commands
+            cargo-watch # Auto-run on file changes
+            cargo-nextest # Faster test runner
+            cargo-expand # Macro debugging
 
             # Quality & security (frequent use)
-            cargo-audit        # Security vulnerability checking
-            cargo-outdated     # Dependency updates
-            cargo-machete      # Unused dependency detection
-            cargo-deny         # License and security policy
+            cargo-audit # Security vulnerability checking
+            cargo-outdated # Dependency updates
+            cargo-machete # Unused dependency detection
+            cargo-deny # License and security policy
 
             # Performance tools (occasional use)
-            cargo-tarpaulin    # Code coverage
-            cargo-criterion    # Benchmarking
+            cargo-tarpaulin # Code coverage
+            cargo-criterion # Benchmarking
 
             # Development tools
-            git                # Version control
-            gh                 # GitHub CLI
-            just               # Task runner
+            git # Version control
+            gh # GitHub CLI
+            just # Task runner
           ];
 
           shellHook = ''

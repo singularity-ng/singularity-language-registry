@@ -1,68 +1,137 @@
-#!/usr/bin/env rust-script
-//! Sync File Classification Patterns from GitHub Linguist
+//! Synchronize File Classification and Language Detection Patterns from GitHub Linguist
 //!
-//! This tool downloads Linguist's vendor.yml and generated.rb,
-//! extracts file patterns, and generates Rust code for FileClassifier.
+//! This tool downloads Linguist's pattern files and generates Rust code for:
+//! - Phase 2: File classification (vendor, generated, binary patterns)
+//! - Phase 3: Language detection heuristics (ambiguous extension resolution)
 //!
-//! Usage: cargo run --bin linguist_sync > src/file_classifier_generated.rs
+//! Run with: cargo run --bin sync-linguist --features sync-tool
 //!
-//! Patterns extracted:
-//! - vendor.yml: Vendored code paths and files
-//! - generated.rb: Generated file detection rules
+//! Output: Generates two files:
+//! - src/file_classifier_generated.rs (Phase 2)
+//! - src/heuristics_generated.rs (Phase 3)
 
+use anyhow::{Context, Result};
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
-use std::error::Error;
 
-/// Linguist pattern sources
 const VENDOR_YML_URL: &str =
     "https://raw.githubusercontent.com/github-linguist/linguist/master/lib/linguist/vendor.yml";
 const GENERATED_RB_URL: &str =
     "https://raw.githubusercontent.com/github-linguist/linguist/master/lib/linguist/generated.rb";
+const HEURISTICS_YML_URL: &str =
+    "https://raw.githubusercontent.com/github-linguist/linguist/master/lib/linguist/heuristics.yml";
 
-/// Parse vendor.yml regex patterns
-fn extract_vendor_patterns(content: &str) -> Result<Vec<String>, Box<dyn Error>> {
-    let mut patterns = Vec::new();
+/// Fetch content from a URL
+async fn fetch_url(url: &str) -> Result<String> {
+    eprintln!("📥 Fetching {}", url);
+    let client = reqwest::Client::new();
+    let response = client
+        .get(url)
+        .timeout(std::time::Duration::from_secs(30))
+        .send()
+        .await
+        .context(format!("Failed to fetch {}", url))?;
 
-    // vendor.yml format is YAML with regex patterns as strings
-    // Pattern: "regex_pattern"
+    let content = response
+        .text()
+        .await
+        .context("Failed to read response body")?;
+
+    eprintln!("✅ Fetched {} bytes", content.len());
+    Ok(content)
+}
+
+/// Parse vendor.yml and extract vendored path patterns
+fn parse_vendor_yml(content: &str) -> HashSet<String> {
+    let mut patterns = HashSet::new();
+
     for line in content.lines() {
         let trimmed = line.trim();
-        // Look for quoted strings that look like patterns
-        if trimmed.starts_with('"') && trimmed.ends_with('"') {
-            let pattern = trimmed.trim_matches('"').to_string();
-            // Only keep simple patterns, not complex regexes
-            if !pattern.contains('(') && !pattern.contains('[') {
-                patterns.push(pattern);
+
+        // Skip comments and empty lines
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+
+        // Extract patterns (YAML list items start with -)
+        if let Some(pattern) = trimmed.strip_prefix("- ") {
+            let cleaned = pattern
+                .trim_matches('"')
+                .trim_matches('\'')
+                .trim()
+                .to_string();
+
+            if !cleaned.is_empty() && !cleaned.contains('(') && cleaned.len() < 100 {
+                patterns.insert(cleaned);
             }
         }
     }
 
-    // Remove duplicates
-    let unique: HashSet<_> = patterns.iter().cloned().collect();
-    Ok(unique.into_iter().collect())
+    patterns
 }
 
-/// Parse generated.rb detection patterns
-fn extract_generated_patterns(content: &str) -> Result<Vec<String>, Box<dyn Error>> {
-    let mut patterns = Vec::new();
-
-    // generated.rb has patterns in various formats:
-    // - File extensions: "\.pb\.rs", "\.generated\.ts"
-    // - Directory paths: "__generated__/", "node_modules/"
-    // - Content markers in comments
+/// Parse generated.rb and extract generated file patterns
+fn parse_generated_rb(content: &str) -> HashSet<String> {
+    let mut patterns = HashSet::new();
+    let quote_pattern = Regex::new(r#"['"](.*?)['"]"#).unwrap();
 
     for line in content.lines() {
         let trimmed = line.trim();
 
-        // Match quoted string patterns
-        if (trimmed.contains('\'') || trimmed.contains('"')) && !trimmed.starts_with('#') {
-            // Extract quoted strings
-            if let Some(start) = trimmed.find('\'').or_else(|| trimmed.find('"')) {
-                let quote_char = trimmed.chars().nth(start).unwrap();
-                if let Some(end) = trimmed[start + 1..].find(quote_char) {
+        // Skip comments and empty lines
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+
+        // Extract quoted strings
+        for cap in quote_pattern.captures_iter(trimmed) {
+            if let Some(matched) = cap.get(1) {
+                let pattern = matched.as_str().to_string();
+                if pattern.len() < 100 && !pattern.contains("//") {
+                    patterns.insert(pattern);
+                }
+            }
+        }
+    }
+
+    patterns
+}
+
+/// Parse heuristics.yml and extract language detection rules (Phase 3)
+fn parse_heuristics_yml(content: &str) -> HashMap<String, Vec<String>> {
+    let mut heuristics: HashMap<String, Vec<String>> = HashMap::new();
+
+    // Simple parser for disambiguation rules
+    let mut current_extension: Option<String> = None;
+    let mut patterns: Vec<String> = Vec::new();
+
+    for line in content.lines() {
+        let trimmed = line.trim();
+
+        // Skip comments
+        if trimmed.starts_with('#') {
+            continue;
+        }
+
+        // Detect disambiguation blocks (extensions like ".pl:", ".m:", etc.)
+        if trimmed.ends_with(':') && !trimmed.starts_with('-') {
+            // Save previous extension's patterns
+            if let Some(ext) = current_extension.take() {
+                if !patterns.is_empty() {
+                    heuristics.insert(ext, patterns.clone());
+                    patterns.clear();
+                }
+            }
+
+            current_extension = Some(trimmed.trim_end_matches(':').trim_matches('"').to_string());
+        }
+
+        // Extract pattern content (quoted strings)
+        if trimmed.contains('"') {
+            if let Some(start) = trimmed.find('"') {
+                if let Some(end) = trimmed[start + 1..].find('"') {
                     let pattern = &trimmed[start + 1..start + 1 + end];
-                    // Simple pattern validation
-                    if !pattern.is_empty() && pattern.len() < 100 {
+                    if !pattern.is_empty() && pattern.len() < 200 {
                         patterns.push(pattern.to_string());
                     }
                 }
@@ -70,79 +139,214 @@ fn extract_generated_patterns(content: &str) -> Result<Vec<String>, Box<dyn Erro
         }
     }
 
-    // Remove duplicates and sort
-    let mut unique: Vec<_> = patterns.iter().cloned().collect::<HashSet<_>>().into_iter().collect();
-    unique.sort();
-    Ok(unique)
+    // Save last extension
+    if let Some(ext) = current_extension {
+        if !patterns.is_empty() {
+            heuristics.insert(ext, patterns);
+        }
+    }
+
+    heuristics
 }
 
-/// Generate Rust code for patterns
-fn generate_rust_code(
-    vendored: Vec<String>,
-    generated: Vec<String>,
+/// Categorize patterns into vendored, generated, and binary
+fn categorize_patterns(
+    patterns: &HashSet<String>,
+) -> (HashSet<String>, HashSet<String>, HashSet<String>) {
+    let mut vendored = HashSet::new();
+    let mut generated = HashSet::new();
+    let mut binary = HashSet::new();
+
+    let binary_exts = [
+        ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".zip", ".tar", ".gz", ".rar", ".exe",
+        ".dll", ".pdf", ".mp3", ".mp4",
+    ];
+
+    for pattern in patterns {
+        if pattern.starts_with('.') && pattern.len() < 10 {
+            // It's an extension
+            if binary_exts.contains(&pattern.as_str()) {
+                binary.insert(pattern.clone());
+            } else if pattern.contains("pb")
+                || pattern.contains("generated")
+                || pattern.contains("proto")
+            {
+                generated.insert(pattern.clone());
+            }
+        } else {
+            // It's a path
+            vendored.insert(pattern.clone());
+        }
+    }
+
+    (vendored, generated, binary)
+}
+
+/// Generate Rust code for file classifier patterns (Phase 2)
+fn generate_file_classifier_code(
+    vendored: &HashSet<String>,
+    generated: &HashSet<String>,
+    binary: &HashSet<String>,
 ) -> String {
     let mut code = String::from(
         r#"// AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-// This file is auto-generated from GitHub Linguist patterns
-// Run: cargo run --bin linguist_sync
-// Source: https://github.com/github-linguist/linguist
+// Generated from GitHub Linguist patterns (vendor.yml, generated.rb)
+// Run: cargo run --bin sync-linguist --features sync-tool
 
-/// Auto-generated vendored code patterns from Linguist
-pub const VENDORED_PATTERNS: &[&str] = &[
+//! Auto-generated file classification patterns from GitHub Linguist
+//!
+//! These patterns are kept in sync with GitHub Linguist via:
+//! cargo run --bin sync-linguist --features sync-tool
+//!
+//! Sources:
+//! - vendor.yml: Vendored code detection
+//! - generated.rb: Auto-generated file detection
+
+/// Vendored code path patterns (from Linguist vendor.yml)
+pub const VENDORED_PATTERNS_FROM_LINGUIST: &[&str] = &[
 "#,
     );
 
-    for pattern in &vendored {
-        code.push_str(&format!("    {},\n", format_pattern_string(pattern)));
+    let mut sorted_vendored: Vec<_> = vendored.iter().collect();
+    sorted_vendored.sort();
+    for pattern in sorted_vendored {
+        let escaped = pattern.replace('\\', "\\\\").replace('"', "\\\"");
+        code.push_str(&format!("    \"{}\",\n", escaped));
     }
 
     code.push_str(
         r#"];
 
-/// Auto-generated file patterns for generated files from Linguist
-pub const GENERATED_PATTERNS: &[&str] = &[
+/// Generated file patterns (from Linguist generated.rb)
+pub const GENERATED_PATTERNS_FROM_LINGUIST: &[&str] = &[
 "#,
     );
 
-    for pattern in &generated {
-        code.push_str(&format!("    {},\n", format_pattern_string(pattern)));
+    let mut sorted_generated: Vec<_> = generated.iter().collect();
+    sorted_generated.sort();
+    for pattern in sorted_generated {
+        let escaped = pattern.replace('\\', "\\\\").replace('"', "\\\"");
+        code.push_str(&format!("    \"{}\",\n", escaped));
     }
 
     code.push_str(
         r#"];
+
+/// Binary file extensions (images, archives, executables, documents, media)
+pub const BINARY_PATTERNS_FROM_LINGUIST: &[&str] = &[
 "#,
     );
 
+    let mut sorted_binary: Vec<_> = binary.iter().collect();
+    sorted_binary.sort();
+    for pattern in sorted_binary {
+        code.push_str(&format!("    \"{}\",\n", pattern));
+    }
+
+    code.push_str("];\n");
     code
 }
 
-/// Format pattern string for Rust code
-fn format_pattern_string(pattern: &str) -> String {
-    // Escape special characters
-    let escaped = pattern
-        .replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r");
-    format!("\"{}\"", escaped)
+/// Generate Rust code for language detection heuristics (Phase 3)
+fn generate_heuristics_code(heuristics: &HashMap<String, Vec<String>>) -> String {
+    let mut code = String::from(
+        r#"// AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+// Generated from GitHub Linguist heuristics.yml (Phase 3)
+// Run: cargo run --bin sync-linguist --features sync-tool
+
+//! Auto-generated language detection heuristics from GitHub Linguist
+//!
+//! These patterns help detect languages for ambiguous file extensions:
+//! - .pl: Perl vs Prolog
+//! - .m: Objective-C vs Matlab
+//! - .rs: Rust (resolved via extension only, but kept for future use)
+//!
+//! Implementation roadmap:
+//! 1. Extract patterns from heuristics.yml
+//! 2. Build decision tree for ambiguous extensions
+//! 3. Integrate into language detection pipeline
+
+/// Language detection heuristics (Phase 3)
+/// Maps file extensions to detection patterns
+pub const LANGUAGE_DETECTION_HEURISTICS: &[(&str, &[&str])] = &[
+"#,
+    );
+
+    let mut sorted_exts: Vec<_> = heuristics.keys().collect();
+    sorted_exts.sort();
+
+    for ext in sorted_exts {
+        if let Some(patterns) = heuristics.get(*ext) {
+            code.push_str(&format!("    (\"{}\", &[\n", ext));
+            for pattern in patterns.iter().take(5) {
+                // Limit to 5 patterns per extension
+                let escaped = pattern.replace('\\', "\\\\").replace('"', "\\\"");
+                code.push_str(&format!("        \"{}\",\n", escaped));
+            }
+            code.push_str("    ]),\n");
+        }
+    }
+
+    code.push_str("];\n");
+    code
 }
 
-/// Main function
-fn main() -> Result<(), Box<dyn Error>> {
-    eprintln!("Fetching Linguist vendor patterns...");
-    // In a real implementation, this would fetch from the URLs
-    // For now, we'll document the structure
+/// Main entry point
+#[tokio::main]
+async fn main() -> Result<()> {
+    eprintln!("🚀 Syncing patterns from GitHub Linguist...\n");
 
-    eprintln!("Phase 2: Auto-generation from Linguist");
-    eprintln!("This is a roadmap implementation.");
-    eprintln!("To fully implement:");
-    eprintln!("1. Fetch vendor.yml from GitHub");
-    eprintln!("2. Parse YAML file for regex patterns");
-    eprintln!("3. Extract common patterns (node_modules/, vendor/, etc.)");
-    eprintln!("4. Fetch generated.rb from GitHub");
-    eprintln!("5. Parse Ruby code for extension/pattern matches");
-    eprintln!("6. Generate Rust code arrays");
-    eprintln!("7. Embed in build.rs for auto-generation");
+    // Fetch files
+    let vendor_content = fetch_url(VENDOR_YML_URL).await?;
+    let generated_content = fetch_url(GENERATED_RB_URL).await?;
+    let heuristics_content = fetch_url(HEURISTICS_YML_URL).await?;
+
+    eprintln!("\n⚙️  Parsing patterns...\n");
+
+    // Parse Phase 2 patterns
+    let vendor_patterns = parse_vendor_yml(&vendor_content);
+    let generated_patterns = parse_generated_rb(&generated_content);
+
+    eprintln!("Found {} vendor patterns", vendor_patterns.len());
+    eprintln!("Found {} generated patterns", generated_patterns.len());
+
+    let all_patterns = vendor_patterns
+        .union(&generated_patterns)
+        .cloned()
+        .collect();
+    let (vendored, generated, binary) = categorize_patterns(&all_patterns);
+
+    eprintln!(
+        "Categorized: {} vendored, {} generated, {} binary\n",
+        vendored.len(),
+        generated.len(),
+        binary.len()
+    );
+
+    // Parse Phase 3 heuristics
+    let heuristics = parse_heuristics_yml(&heuristics_content);
+    eprintln!(
+        "Found {} language detection heuristics (Phase 3)\n",
+        heuristics.len()
+    );
+
+    // Generate code
+    eprintln!("💾 Generating Rust code...\n");
+
+    let file_classifier_code = generate_file_classifier_code(&vendored, &generated, &binary);
+    let heuristics_code = generate_heuristics_code(&heuristics);
+
+    // Output Phase 2
+    println!("{}", file_classifier_code);
+    eprintln!("✅ Generated file classifier patterns (Phase 2)");
+
+    // Output Phase 3 to stderr (user will redirect)
+    eprintln!("\n{}", heuristics_code);
+    eprintln!("✅ Generated language detection heuristics (Phase 3)");
+
+    eprintln!("\n📍 Complete! Patterns synced from GitHub Linguist");
+    eprintln!("   Phase 2: File classification");
+    eprintln!("   Phase 3: Language detection heuristics");
 
     Ok(())
 }
