@@ -183,6 +183,10 @@ impl Default for FileClassifier {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::missing_panics_doc,
+    reason = "Test module doesn't need panic documentation"
+)]
 mod tests {
     use super::*;
     use std::path::PathBuf;

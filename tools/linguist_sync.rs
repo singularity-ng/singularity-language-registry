@@ -276,7 +276,7 @@ pub const LANGUAGE_DETECTION_HEURISTICS: &[(&str, &[&str])] = &[
     sorted_exts.sort();
 
     for ext in sorted_exts {
-        if let Some(patterns) = heuristics.get(*ext) {
+        if let Some(patterns) = heuristics.get(ext) {
             code.push_str(&format!("    (\"{}\", &[\n", ext));
             for pattern in patterns.iter().take(5) {
                 // Limit to 5 patterns per extension

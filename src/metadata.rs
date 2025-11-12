@@ -69,7 +69,7 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
     // Check AST-Grep support
     for lang_id in &source.ast_grep_languages {
         if let Some(lang) = LANGUAGE_REGISTRY.get_language(lang_id) {
-            if !lang.ast_grep_supported {
+            if !lang.ast_grep_supported.load(Ordering::Relaxed) {
                 capability_mismatches.push(CapabilityMismatch {
                     language: lang_id.clone(),
                     capability: "AST-Grep".to_owned(),
@@ -93,7 +93,9 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
             });
         }
 
-        if lang.ast_grep_supported && !source.ast_grep_languages.contains(&lang.id) {
+        if lang.ast_grep_supported.load(Ordering::Relaxed)
+            && !source.ast_grep_languages.contains(&lang.id)
+        {
             capability_mismatches.push(CapabilityMismatch {
                 language: lang.id.clone(),
                 capability: "AST-Grep".to_owned(),
@@ -155,7 +157,7 @@ pub fn generate_metadata_report() -> String {
             } else {
                 "✗"
             },
-            if lang.ast_grep_supported {
+            if lang.ast_grep_supported.load(Ordering::Relaxed) {
                 "✓"
             } else {
                 "✗"

@@ -37,7 +37,13 @@ fmt:
 # Run clippy with pedantic mode
 clippy:
     if command -v nix >/dev/null 2>&1; then \
-        nix shell nixpkgs#pkg-config nixpkgs#openssl --command cargo clippy --all-targets --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery; \
+        OPENSSL_OUTPUT=$(nix eval --raw nixpkgs#openssl.out); \
+        OPENSSL_DEV=$(nix eval --raw nixpkgs#openssl.dev); \
+        PKG_CONFIG_PATH="$OPENSSL_DEV/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
+            OPENSSL_DIR="$OPENSSL_DEV" \
+            OPENSSL_INCLUDE_DIR="$OPENSSL_DEV/include" \
+            OPENSSL_LIB_DIR="$OPENSSL_OUTPUT/lib" \
+            nix shell nixpkgs#pkg-config nixpkgs#openssl --command cargo clippy --all-targets --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery; \
     else \
         if [ -n "${OPENSSL_DIR:-}" ] || { command -v pkg-config >/dev/null 2>&1 && pkg-config --exists openssl; }; then \
             cargo clippy --all-targets --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery; \
@@ -49,7 +55,13 @@ clippy:
 # Run tests
 test:
     if command -v nix >/dev/null 2>&1; then \
-        nix shell nixpkgs#pkg-config nixpkgs#openssl --command cargo test --all-features; \
+        OPENSSL_OUTPUT=$(nix eval --raw nixpkgs#openssl.out); \
+        OPENSSL_DEV=$(nix eval --raw nixpkgs#openssl.dev); \
+        PKG_CONFIG_PATH="$OPENSSL_DEV/lib/pkgconfig:${PKG_CONFIG_PATH:-}" \
+            OPENSSL_DIR="$OPENSSL_DEV" \
+            OPENSSL_INCLUDE_DIR="$OPENSSL_DEV/include" \
+            OPENSSL_LIB_DIR="$OPENSSL_OUTPUT/lib" \
+            nix shell nixpkgs#pkg-config nixpkgs#openssl --command cargo test --all-features; \
     else \
         if [ -n "${OPENSSL_DIR:-}" ] || { command -v pkg-config >/dev/null 2>&1 && pkg-config --exists openssl; }; then \
             cargo test --all-features; \
