@@ -9,6 +9,7 @@ repository = "https://github.com/singularity/singularity"
 keywords = ["language", "registry", "detection", "parsing", "analysis"]
 categories = ["development-tools"]
 homepage = "https://github.com/singularity/singularity"
+readme = "README.md"
 
 # Exclude development/CI files from crates.io package
 exclude = [
