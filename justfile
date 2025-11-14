@@ -75,6 +75,10 @@ test:
 pre-commit: fmt clippy test
     @echo "✅ Pre-commit checks passed"
 
+# Aggregate all checks used by the git pre-push hook
+pre-push: fmt clippy test
+    @echo "✅ Pre-push checks passed"
+
 # Run tests in release mode
 test-release:
     cargo test --all-features --release
