@@ -96,7 +96,10 @@ impl StringList {
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(clippy::struct_field_names, reason = "Field names match Linguist's schema")]
+#[allow(
+    clippy::struct_field_names,
+    reason = "Field names match Linguist's schema"
+)]
 struct Language {
     #[serde(rename = "type")]
     language_type: String,
@@ -755,7 +758,10 @@ fn write_to_file(path: &Path, contents: &str) -> Result<()> {
 ///
 /// Panics only if `StringList` encounters an unexpected variant (which should be
 /// impossible with the current serde definitions).
-#[allow(clippy::too_many_lines, reason = "Main function orchestrates multiple sync phases")]
+#[allow(
+    clippy::too_many_lines,
+    reason = "Main function orchestrates multiple sync phases"
+)]
 #[tokio::main]
 async fn main() -> Result<()> {
     if env_logger::builder()

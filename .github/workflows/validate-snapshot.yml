@@ -19,7 +19,7 @@ jobs:
 
       - name: Build linguist_to_snapshot tool
         run: |
-          cargo build --release --bin linguist_to_snapshot
+          cargo build --release -p linguist_to_snapshot
 
       - name: Generate snapshot from PR-provided linguist (if present)
         run: |

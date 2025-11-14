@@ -23,7 +23,7 @@ jobs:
 
       - name: Build linguist_to_snapshot
         run: |
-          cargo build --release --bin linguist_to_snapshot
+          cargo build --release -p linguist_to_snapshot
 
       - name: Generate canonical snapshot and open PR
         env:
