@@ -4,10 +4,19 @@
 // Run: cargo run --bin sync-linguist --features sync-tool
 
 //! Auto-generated language metadata from GitHub Linguist.
+//!
 //! Contains comprehensive language definitions including extensions,
 //! colors, interpreters, and editor modes.
 
+// Generated code - allow pedantic lints
+#![allow(
+    clippy::exhaustive_structs,
+    clippy::too_long_first_doc_paragraph,
+    reason = "Generated code from linguist sync tool"
+)]
+
 #[derive(Debug, Clone, Copy)]
+#[non_exhaustive]
 pub struct LanguageMetadata {
 pub name: &'static str,
 pub language_type: &'static str,

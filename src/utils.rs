@@ -144,8 +144,8 @@ pub type AnalysisFeature = LanguageCapability;
 
 /// Check if a language supports a specific capability.
 ///
-/// For explicit capabilities (RCA, ASTGrep, Linting, Parsing, CodeEngine),
-/// this checks the capability bitmask. For implicit capabilities (TreeSitter,
+/// For explicit capabilities (RCA, `ASTGrep`, Linting, Parsing, `CodeEngine`),
+/// this checks the capability bitmask. For implicit capabilities (`TreeSitter`,
 /// Complexity, Security, Performance), this uses language properties.
 pub fn supports_feature(language: &str, capability: LanguageCapability) -> bool {
     let Some(lang) = LANGUAGE_REGISTRY.get_language(language) else {
