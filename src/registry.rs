@@ -358,8 +358,8 @@ impl LanguageRegistry {
         // Embed the fixture at compile time so builds work in Nix sandboxed environments
         const FIXTURE_CONTENTS: &str = include_str!("fixtures/builtin_snapshot.json");
 
-        let snapshots: Vec<LanguageInfoSnapshot> =
-            serde_json::from_str(FIXTURE_CONTENTS).unwrap_or_else(|e| {
+        let snapshots: Vec<LanguageInfoSnapshot> = serde_json::from_str(FIXTURE_CONTENTS)
+            .unwrap_or_else(|e| {
                 panic!("Failed to parse embedded test fixture builtin_snapshot.json: {e}")
             });
 
