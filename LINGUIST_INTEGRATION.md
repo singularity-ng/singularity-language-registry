@@ -129,23 +129,26 @@ git commit -m "chore(linguist): sync Phase 2 & 3 patterns"
 
 ### Implementation Details
 
-#### Synchronization Script (`scripts/sync_linguist_patterns.py`)
+#### Synchronization Tools (`tools/`)
+Run synchronization with: `just sync-linguist`
+
 1. **Downloads from Linguist**:
    - `vendor.yml`: Vendored code patterns (6.5KB)
    - `generated.rb`: Generated file detection logic (29.8KB)
-   - `heuristics.yml`: Language detection rules (35KB, Phase 3)
+   - `heuristics.yml`: Language detection rules (35KB)
+   - `languages.yml`: Language metadata (600+ languages)
 
 2. **Parses patterns**:
-   - YAML parsing for `vendor.yml`
+   - YAML parsing for `vendor.yml`, `heuristics.yml`, `languages.yml`
    - Ruby AST parsing for `generated.rb`
    - Regex extraction and normalization
 
 3. **Generates Rust code**:
-   - Static arrays: `VENDORED_PATTERNS_FROM_LINGUIST`
-   - Static arrays: `GENERATED_PATTERNS_FROM_LINGUIST`
-   - Static arrays: `BINARY_PATTERNS_FROM_LINGUIST`
+   - `src/file_classifier_generated.rs`: Vendored, generated, binary patterns
+   - `src/heuristics_generated.rs`: Language disambiguation rules
+   - `src/languages_metadata_generated.rs`: 600+ language definitions
 
-4. **Output**: `src/file_classifier_generated.rs` (auto-generated)
+4. **Output files** (auto-generated, do not edit manually)
 
 #### FileClassifier Usage
 ```rust

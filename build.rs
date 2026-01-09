@@ -15,45 +15,36 @@
 //! - ✅ `supported_in_singularity` flag for explicit support
 //! - ✅ Weekly Renovate alerts
 //!
-//! ### Phase 2: File Classification (🔧 IN PROGRESS)
+//! ### Phase 2: File Classification (✅ DONE)
 //!
-//! #### Implementation Step 1: Manual Synchronization (Current)
-//! Run the synchronization script when Linguist updates:
+//! Run the synchronization tool when Linguist updates:
 //! ```bash
-//! python3 scripts/sync_linguist_patterns.py > src/file_classifier_generated.rs
+//! just sync-linguist
 //! cargo test
-//! git add src/file_classifier_generated.rs
+//! git add src/file_classifier_generated.rs src/heuristics_generated.rs
 //! git commit -m "chore(linguist): sync file classification patterns"
 //! ```
 //!
-//! #### Implementation Step 2: Automated Synchronization (Future)
-//! This build script can be extended to:
-//! ```bash
-//! cargo xtask sync-linguist
-//! ```
-//!
-//! Which will:
-//! 1. Download `vendor.yml` from Linguist
-//! 2. Download `generated.rb` from Linguist
-//! 3. Parse and extract patterns
-//! 4. Generate Rust code arrays
-//! 5. Update `src/file_classifier_generated.rs`
-//! 6. Run tests to validate
+//! The `just sync-linguist` command runs the Rust-based sync tools in `tools/`:
+//! 1. Downloads `vendor.yml`, `generated.rb`, `heuristics.yml` from Linguist
+//! 2. Parses and extracts patterns
+//! 3. Generates Rust code arrays
+//! 4. Updates `src/file_classifier_generated.rs` and `src/heuristics_generated.rs`
 //!
 //! #### Patterns Extracted
 //! - **Vendored**: `node_modules/`, `vendor/`, `.yarn/`, `Pods/`, `dist/`, `build/`
 //! - **Generated**: `.pb.rs`, `.pb.go`, `.generated.ts`, `.designer.cs`, `.meta`
 //! - **Binary**: `.png`, `.jpg`, `.zip`, `.exe`, `.dll`, `.pdf`
 //!
-//! ### Phase 3: Detection Heuristics (📋 PLANNED)
-//! - Extract `heuristics.yml` from Linguist (35KB)
-//! - Generate fallback language detection for ambiguous extensions
-//! - Support: `.pl` (Perl vs Prolog), `.m` (Objective-C vs Matlab), etc.
+//! ### Phase 3: Detection Heuristics (✅ DONE)
+//! - Extracted `heuristics.yml` from Linguist
+//! - Generated fallback language detection for ambiguous extensions
+//! - Supports: `.h` (C vs C++ vs Objective-C), `.pl` (Perl vs Prolog), etc.
 //!
 //! ### Maintenance Workflow
 //! When Renovate creates a Linguist update PR:
 //! 1. Review language definition changes
-//! 2. Run: `python3 scripts/sync_linguist_patterns.py`
+//! 2. Run: `just sync-linguist`
 //! 3. Run: `cargo test`
 //! 4. Commit changes: `git add . && git commit`
 //! 5. Merge and create release
