@@ -16,21 +16,6 @@ struct Args {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct LinguistEntry {
-    // We'll parse a subset; unknown fields ignored
-    pub extensions: Option<Vec<String>>,
-    pub aliases: Option<Vec<String>>,
-    pub linguist_language_id: Option<String>,
-    #[serde(rename = "type")]
-    pub _type: Option<String>,
-    pub tm_scope: Option<String>,
-    pub ace_mode: Option<String>,
-    pub interpreters: Option<Vec<String>>,
-    pub filenames: Option<Vec<String>>,
-    pub mime_types: Option<Vec<String>>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 struct SnapshotEntry {
     pub id: String,
     pub name: String,
