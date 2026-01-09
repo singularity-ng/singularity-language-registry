@@ -69,7 +69,7 @@ jobs:
         uses: google-github-actions/run-gemini-cli@v0.1.18
         with:
           prompt: ${{ steps.prep.outputs.prompt }}
-          use_gemini_code_assist: true
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Parse Confidence Score
         id: parse
