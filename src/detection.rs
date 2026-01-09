@@ -90,8 +90,7 @@ pub fn detect_from_shebang(content: &str) -> Option<&'static LanguageInfo> {
     };
 
     // Strip version numbers from interpreter (python3 -> python, ruby2.7 -> ruby)
-    let base_interpreter = interpreter
-        .trim_end_matches(|c: char| c.is_ascii_digit() || c == '.');
+    let base_interpreter = interpreter.trim_end_matches(|c: char| c.is_ascii_digit() || c == '.');
 
     // First try: direct lookup by interpreter name as ID (handles "bash", "python", etc.)
     if let Some(lang) = LANGUAGE_REGISTRY.get_language(base_interpreter) {

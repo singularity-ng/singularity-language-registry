@@ -24,7 +24,9 @@
 //! }
 //! ```
 
-use crate::file_classifier_generated::{BINARY_PATTERNS_FROM_LINGUIST, VENDORED_PATTERNS_FROM_LINGUIST};
+use crate::file_classifier_generated::{
+    BINARY_PATTERNS_FROM_LINGUIST, VENDORED_PATTERNS_FROM_LINGUIST,
+};
 use std::path::Path;
 
 /// File classification result
@@ -60,16 +62,12 @@ const EXTRA_BINARY_EXTENSIONS: &[&str] = &[
     // Images
     ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".ico", ".webp", ".tiff", ".tif",
     // Archives
-    ".zip", ".tar", ".gz", ".rar", ".7z", ".bz2", ".xz", ".zst",
-    // Compiled binaries
+    ".zip", ".tar", ".gz", ".rar", ".7z", ".bz2", ".xz", ".zst", // Compiled binaries
     ".exe", ".bin", ".so", ".dll", ".dylib", ".a", ".lib", ".o", ".obj",
     // Documents (binary formats)
-    ".pdf", ".docx", ".xlsx", ".pptx", ".doc", ".xls", ".ppt",
-    // Audio/Video
-    ".mp3", ".mp4", ".wav", ".avi", ".mov", ".flac", ".ogg", ".mkv", ".webm",
-    // Fonts
-    ".ttf", ".otf", ".woff", ".woff2", ".eot",
-    // Other binary formats
+    ".pdf", ".docx", ".xlsx", ".pptx", ".doc", ".xls", ".ppt", // Audio/Video
+    ".mp3", ".mp4", ".wav", ".avi", ".mov", ".flac", ".ogg", ".mkv", ".webm", // Fonts
+    ".ttf", ".otf", ".woff", ".woff2", ".eot", // Other binary formats
     ".pyc", ".pyo", ".class", ".jar", ".war", ".ear",
 ];
 
@@ -341,7 +339,6 @@ fn simplify_regex_pattern(pattern: &str) -> String {
 
     result
 }
-
 
 #[cfg(test)]
 #[allow(
@@ -629,7 +626,7 @@ mod tests {
     fn test_classifier_copy() {
         let c1 = FileClassifier::new();
         let c2 = c1; // Copy
-        // Both should work independently
+                     // Both should work independently
         assert!(c1.should_analyze(&PathBuf::from("test.rs")));
         assert!(c2.should_analyze(&PathBuf::from("test.rs")));
     }
