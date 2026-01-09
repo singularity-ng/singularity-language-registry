@@ -5,7 +5,7 @@
 
 Centralized language registry for all Singularity analysis engines.
 
-**[📚 View Documentation](https://singularity-ng.github.io/singularity-language-registry/)** | **[📖 Setup Guide](./DOCS_SETUP.md)**
+**[📚 Documentation](https://singularity-ng.github.io/singularity-language-registry/)** | **[⚡ Installation Guide](./INSTALLATION.md)** | **[🔧 Setup Guide](./DOCS_SETUP.md)**
 
 ## Purpose
 
@@ -41,10 +41,18 @@ language_registry (independent)
 
 ## Installation
 
-### Using Cargo
+> **📖 See [INSTALLATION.md](./INSTALLATION.md) for complete guide including Mix (Elixir) dependencies and binary downloads**
+
+### Quick Start - Rust
 
 ```bash
 cargo add singularity-language-registry
+```
+
+Or in `Cargo.toml`:
+```toml
+[dependencies]
+singularity-language-registry = { git = "https://github.com/Singularity-ng/singularity-language-registry", tag = "latest" }
 ```
 
 ### Using Nix
