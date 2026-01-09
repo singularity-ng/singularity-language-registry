@@ -170,9 +170,9 @@ pub fn supports_feature(language: &str, capability: LanguageCapability) -> bool 
         // Explicit capabilities - check bitmask or atomic bool
         LanguageCapability::RCA => lang.rca_supported.load(Ordering::Relaxed),
         LanguageCapability::ASTGrep => lang.ast_grep_supported.load(Ordering::Relaxed),
-        LanguageCapability::Linting | LanguageCapability::Parsing | LanguageCapability::CodeEngine => {
-            lang.has_capability(capability)
-        }
+        LanguageCapability::Linting
+        | LanguageCapability::Parsing
+        | LanguageCapability::CodeEngine => lang.has_capability(capability),
 
         // Implicit capabilities - determined by language properties
         LanguageCapability::TreeSitter => lang.tree_sitter_language.is_some(),
@@ -286,7 +286,10 @@ mod tests {
     #[test]
     fn test_same_family() {
         // Elixir and Erlang are both BEAM
-        assert!(same_family("elixir", "erlang"), "elixir and erlang are BEAM");
+        assert!(
+            same_family("elixir", "erlang"),
+            "elixir and erlang are BEAM"
+        );
 
         // Rust and Elixir are different families
         assert!(
