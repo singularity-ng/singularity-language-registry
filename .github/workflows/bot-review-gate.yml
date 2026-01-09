@@ -79,7 +79,7 @@ jobs:
           echo "Confidence: $CONFIDENCE"
           echo "Reasoning: $REASONING"
 
-      - name: Evaluate Gate (threshold: 0.90)
+      - name: "Evaluate Gate (threshold: 0.90)"
         id: gate
         run: |
           CONFIDENCE="${{ steps.parse.outputs.confidence }}"
