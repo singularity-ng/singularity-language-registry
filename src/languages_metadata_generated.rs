@@ -8,12 +8,11 @@
 //! Contains comprehensive language definitions including extensions,
 //! colors, interpreters, and editor modes.
 
-// Generated code - allow pedantic lints
+// Generated code - allow pedantic lints from linguist sync tool
 #![allow(
     clippy::exhaustive_structs,
     clippy::too_long_first_doc_paragraph,
-    clippy::unreadable_literal,
-    reason = "Generated code from linguist sync tool"
+    clippy::unreadable_literal
 )]
 
 #[derive(Debug, Clone, Copy)]

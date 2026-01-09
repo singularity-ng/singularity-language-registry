@@ -1,3 +1,13 @@
+// Allow specific clippy lints for detection utilities
+// Pattern matching on references and using short variable names is idiomatic here
+#![allow(
+    clippy::pattern_type_mismatch,
+    clippy::disallowed_names,
+    clippy::let_underscore_untyped,
+    clippy::double_ended_iterator_last,
+    clippy::missing_const_for_fn
+)]
+
 //! Language Detection Utilities
 //!
 //! Advanced language detection beyond simple extension matching.

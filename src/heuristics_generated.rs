@@ -8,11 +8,10 @@
 //! The data model mirrors Linguist's disambiguation rules so downstream consumers
 //! can evaluate ambiguous extensions without depending on Linguist directly.
 
-// Generated code - allow pedantic lints
+// Generated code - allow pedantic lints from linguist sync tool
 #![allow(
     clippy::exhaustive_structs,
-    clippy::too_long_first_doc_paragraph,
-    reason = "Generated code from linguist sync tool"
+    clippy::too_long_first_doc_paragraph
 )]
 
 #[derive(Debug, Clone, Copy)]

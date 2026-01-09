@@ -1,12 +1,13 @@
 // Allow specific clippy lints for file classification operations
+// We work with lowercased strings, need pattern manipulation, and use clear iteration patterns
 #![allow(
-    clippy::case_sensitive_file_extension_comparisons, // We work with lowercased strings
-    clippy::string_slice, // Required for pattern manipulation
-    clippy::manual_strip, // Acceptable for regex pattern processing
-    clippy::disallowed_names, // 'c' is valid for char iteration
-    clippy::let_underscore_untyped, // Acceptable for intentionally ignored values
-    clippy::needless_continue, // Continue used for clarity in pattern matching
-    reason = "File classifier uses string manipulation patterns appropriate for path handling"
+    clippy::case_sensitive_file_extension_comparisons,
+    clippy::string_slice,
+    clippy::manual_strip,
+    clippy::disallowed_names,
+    clippy::let_underscore_untyped,
+    clippy::needless_continue,
+    clippy::missing_const_for_fn
 )]
 
 //! File Classification Engine - Identifies vendored, generated, and binary files

@@ -1,3 +1,6 @@
+// Crate-level clippy allows for pedantic/nursery lints
+#![allow(clippy::allow_attributes_without_reason)]
+
 //! Singularity Language Registry
 //!
 //! Production-ready, centralized language definitions and detection for all Singularity engines.
