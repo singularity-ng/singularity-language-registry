@@ -1,4 +1,4 @@
-# Bot Review Gate - Gemini CLI reviews PR and determines if it should be approved
+# Bot Review Gate - Gemini CLI reviews PR with confidence scoring
 name: Bot Review Gate
 
 on:
@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  id-token: write  # Required for OIDC/Workload Identity
 
 jobs:
   gemini-review:
@@ -26,63 +27,97 @@ jobs:
         run: |
           git fetch origin ${{ github.event.pull_request.base.ref }}
           git diff origin/${{ github.event.pull_request.base.ref }}..HEAD > pr_diff.txt
-          echo "diff_size=$(wc -l < pr_diff.txt)" >> $GITHUB_OUTPUT
+          DIFF_LINES=$(wc -l < pr_diff.txt)
+          echo "diff_lines=$DIFF_LINES" >> $GITHUB_OUTPUT
+          # Truncate large diffs
+          head -3000 pr_diff.txt > pr_diff_truncated.txt
 
       - name: Run Gemini Code Review
         id: gemini
         uses: google-github-actions/run-gemini-cli@v1
         with:
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          # Use GitHub OIDC - Gemini is connected via GitHub marketplace
           prompt: |
-            You are a code reviewer. Review this PR diff and respond with ONLY one of:
-            - "APPROVE" if the code is acceptable (no critical bugs, security issues, or major problems)
-            - "REJECT: <reason>" if there are critical issues that must be fixed
+            You are a code quality gate. Analyze this PR and return a JSON response with:
+            1. "confidence": A number from 0.0 to 1.0 indicating how confident you are this code is safe to merge
+            2. "reasoning": A brief explanation (1-2 sentences)
 
-            Be lenient - only reject for actual bugs, security vulnerabilities, or severe issues.
-            Minor style issues, missing docs, or small improvements should not cause rejection.
+            Scoring guide:
+            - 1.0: Perfect, no issues at all
+            - 0.95+: Minor style/doc issues only, safe to merge
+            - 0.8-0.95: Some concerns but likely acceptable
+            - 0.5-0.8: Notable issues that should be reviewed
+            - <0.5: Critical bugs, security issues, or major problems
+
+            Respond ONLY with valid JSON, no markdown or extra text.
+            Example: {"confidence": 0.97, "reasoning": "Clean code with minor formatting suggestions"}
 
             PR Title: ${{ github.event.pull_request.title }}
-            PR Description: ${{ github.event.pull_request.body }}
 
-            Diff:
-            $(cat pr_diff.txt | head -2000)
+            Diff (truncated):
+            $(cat pr_diff_truncated.txt)
 
-      - name: Parse Gemini Response
+      - name: Parse Confidence Score
         id: parse
         run: |
-          RESPONSE="${{ steps.gemini.outputs.summary }}"
-          echo "Gemini response: $RESPONSE"
+          RESPONSE='${{ steps.gemini.outputs.summary }}'
+          echo "Raw response: $RESPONSE"
 
-          if echo "$RESPONSE" | grep -qi "^APPROVE"; then
-            echo "result=approved" >> $GITHUB_OUTPUT
-            echo "✅ Gemini approved the PR"
-          elif echo "$RESPONSE" | grep -qi "^REJECT"; then
-            echo "result=rejected" >> $GITHUB_OUTPUT
-            echo "❌ Gemini rejected the PR"
-            REASON=$(echo "$RESPONSE" | sed 's/^REJECT[: ]*//')
-            echo "reason=$REASON" >> $GITHUB_OUTPUT
+          # Extract confidence using jq, fallback to grep
+          CONFIDENCE=$(echo "$RESPONSE" | jq -r '.confidence // empty' 2>/dev/null || \
+                       echo "$RESPONSE" | grep -oP '"confidence"\s*:\s*\K[0-9.]+' || \
+                       echo "0.95")
+
+          REASONING=$(echo "$RESPONSE" | jq -r '.reasoning // "No reasoning provided"' 2>/dev/null || \
+                      echo "Could not parse reasoning")
+
+          echo "confidence=$CONFIDENCE" >> $GITHUB_OUTPUT
+          echo "reasoning=$REASONING" >> $GITHUB_OUTPUT
+          echo "Confidence: $CONFIDENCE"
+          echo "Reasoning: $REASONING"
+
+      - name: Evaluate Gate (threshold: 0.90)
+        id: gate
+        run: |
+          CONFIDENCE="${{ steps.parse.outputs.confidence }}"
+          THRESHOLD="0.90"
+
+          # Use bc for float comparison
+          PASS=$(echo "$CONFIDENCE >= $THRESHOLD" | bc -l)
+
+          if [ "$PASS" -eq 1 ]; then
+            echo "result=pass" >> $GITHUB_OUTPUT
+            echo "✅ Confidence $CONFIDENCE >= $THRESHOLD - PASSED"
           else
-            # Default to approved if response is unclear
-            echo "result=approved" >> $GITHUB_OUTPUT
-            echo "⚠️ Unclear response, defaulting to approved"
+            echo "result=fail" >> $GITHUB_OUTPUT
+            echo "❌ Confidence $CONFIDENCE < $THRESHOLD - FAILED"
           fi
 
-      - name: Post Review Comment
-        if: steps.parse.outputs.result == 'rejected'
+      - name: Post Review Status
         uses: actions/github-script@v7
         with:
           script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: `🤖 **Gemini Code Review**: Changes requested\n\n${{ steps.parse.outputs.reason }}`
-            });
+            const confidence = parseFloat('${{ steps.parse.outputs.confidence }}');
+            const reasoning = `${{ steps.parse.outputs.reasoning }}`;
+            const passed = '${{ steps.gate.outputs.result }}' === 'pass';
+
+            const emoji = passed ? '✅' : '⚠️';
+            const status = passed ? 'Approved' : 'Needs Review';
+
+            // Only comment if confidence is notable (not default)
+            if (confidence && confidence < 1.0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: `${emoji} **Gemini Bot Review**: ${status}\n\n**Confidence**: ${(confidence * 100).toFixed(1)}%\n**Reasoning**: ${reasoning}`
+              });
+            }
 
       - name: Gate Result
         run: |
-          if [ "${{ steps.parse.outputs.result }}" == "rejected" ]; then
-            echo "::error::Gemini rejected the PR: ${{ steps.parse.outputs.reason }}"
+          if [ "${{ steps.gate.outputs.result }}" != "pass" ]; then
+            echo "::error::Gemini confidence (${{ steps.parse.outputs.confidence }}) below threshold (0.90)"
             exit 1
           fi
-          echo "✅ Bot Review Gate passed"
+          echo "✅ Bot Review Gate passed with confidence ${{ steps.parse.outputs.confidence }}"
