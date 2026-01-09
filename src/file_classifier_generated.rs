@@ -1,6 +1,8 @@
+// @generated
 // AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
 // Generated from GitHub Linguist patterns (vendor.yml & generated.rb)
 // Run: cargo run --bin sync-linguist --features sync-tool
+#![rustfmt::skip]
 
 //! Auto-generated file classification patterns from GitHub Linguist.
 //! Sources:
