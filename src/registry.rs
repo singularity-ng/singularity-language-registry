@@ -355,9 +355,8 @@ impl LanguageRegistry {
         reason = "Test fixture loading function - panics are expected on invalid fixtures"
     )]
     fn register_all_languages(&mut self) {
-        // Embed the fixture at compile time so tests work in any build environment
-        const FIXTURE_CONTENTS: &str =
-            include_str!("../tests/fixtures/builtin_snapshot.json");
+        // Embed the fixture at compile time so builds work in Nix sandboxed environments
+        const FIXTURE_CONTENTS: &str = include_str!("fixtures/builtin_snapshot.json");
 
         let snapshots: Vec<LanguageInfoSnapshot> =
             serde_json::from_str(FIXTURE_CONTENTS).unwrap_or_else(|e| {
