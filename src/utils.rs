@@ -114,9 +114,11 @@ pub fn file_patterns(language: &str) -> Vec<String> {
     // Fallback to hardcoded defaults for languages without metadata
     match language {
         "rust" => vec!["Cargo.toml".into(), "Cargo.lock".into(), "build.rs".into()],
-        "javascript" | "typescript" => {
-            vec!["package.json".into(), "tsconfig.json".into(), "webpack.config.js".into()]
-        }
+        "javascript" | "typescript" => vec![
+            "package.json".into(),
+            "tsconfig.json".into(),
+            "webpack.config.js".into(),
+        ],
         "python" => vec![
             "requirements.txt".into(),
             "setup.py".into(),
