@@ -12,6 +12,7 @@
 #![allow(
     clippy::exhaustive_structs,
     clippy::too_long_first_doc_paragraph,
+    clippy::unreadable_literal,
     reason = "Generated code from linguist sync tool"
 )]
 

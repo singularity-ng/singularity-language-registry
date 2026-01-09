@@ -5,6 +5,7 @@
     clippy::manual_strip, // Acceptable for regex pattern processing
     clippy::disallowed_names, // 'c' is valid for char iteration
     clippy::let_underscore_untyped, // Acceptable for intentionally ignored values
+    clippy::needless_continue, // Continue used for clarity in pattern matching
     reason = "File classifier uses string manipulation patterns appropriate for path handling"
 )]
 
