@@ -2,7 +2,6 @@
 // AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
 // Generated from GitHub Linguist languages.yml
 // Run: cargo run --bin sync-linguist --features sync-tool
-#![rustfmt::skip]
 
 //! Auto-generated language metadata from GitHub Linguist.
 //! Contains comprehensive language definitions including extensions,

@@ -2,7 +2,6 @@
 // AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
 // Generated from GitHub Linguist heuristics.yml
 // Run: cargo run --bin sync-linguist --features sync-tool
-#![rustfmt::skip]
 
 //! Auto-generated language detection heuristics sourced from GitHub Linguist.
 //! The data model mirrors Linguist's disambiguation rules so downstream consumers
