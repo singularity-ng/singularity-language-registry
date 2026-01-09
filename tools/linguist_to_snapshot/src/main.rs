@@ -56,15 +56,24 @@ fn main() -> Result<()> {
 
     if let Some(obj) = map.as_mapping() {
         for (k, v) in obj {
-            let id = k.as_str().unwrap_or_default().to_string();
-            let name = id.clone();
+            let display_name = k.as_str().unwrap_or_default().to_string();
+            // Normalize ID to lowercase for consistent lookups
+            // (Path::extension() returns "rs" not ".rs", and get_language expects lowercase)
+            let id = display_name.to_lowercase();
+            let name = display_name;
             // Map some fields
-            let extensions = v
+            // Strip leading dots from extensions since Path::extension() returns without dots
+            let extensions: Vec<String> = v
                 .get(&serde_yaml::Value::from("extensions"))
                 .and_then(|x| x.as_sequence())
                 .map(|seq| {
                     seq.iter()
-                        .filter_map(|e| e.as_str().map(|s| s.to_string()))
+                        .filter_map(|e| {
+                            e.as_str().map(|s| {
+                                // Strip leading dot if present (Linguist uses ".rs", we need "rs")
+                                s.strip_prefix('.').unwrap_or(s).to_string()
+                            })
+                        })
                         .collect()
                 })
                 .unwrap_or_default();

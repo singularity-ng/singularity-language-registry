@@ -74,40 +74,26 @@ pub fn same_family(lang1: &str, lang2: &str) -> bool {
 /// Returns linters from the language metadata if available,
 /// otherwise falls back to a hardcoded list for common languages.
 #[must_use]
-pub fn recommended_linters(language: &str) -> Vec<&'static str> {
+pub fn recommended_linters(language: &str) -> Vec<String> {
     // Try to get from language metadata first
     if let Some(lang) = LANGUAGE_REGISTRY.get_language(language) {
         if !lang.linters.is_empty() {
-            // Convert Vec<String> references to &'static str via leak (safe for static registry)
-            // This is a workaround since the registry is static
-            return lang
-                .linters
-                .iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>()
-                .into_iter()
-                .map(|s| {
-                    // SAFETY: The registry is static and lives for 'static lifetime
-                    // We leak the string to get a 'static reference
-                    let leaked: &'static str = Box::leak(s.to_owned().into_boxed_str());
-                    leaked
-                })
-                .collect();
+            return lang.linters.clone();
         }
     }
 
     // Fallback to hardcoded defaults for languages without metadata
     match language {
-        "rust" => vec!["clippy", "rustfmt"],
-        "javascript" | "typescript" => vec!["eslint", "prettier"],
-        "python" => vec!["pylint", "black", "mypy"],
-        "go" => vec!["golangci-lint", "gofmt"],
-        "elixir" => vec!["credo", "mix format"],
-        "erlang" => vec!["dialyzer"],
-        "java" => vec!["spotbugs", "checkstyle"],
-        "c" | "cpp" => vec!["clang-tidy", "cppcheck"],
-        "csharp" => vec!["roslyn", "sonarqube"],
-        "ruby" => vec!["rubocop"],
+        "rust" => vec!["clippy".into(), "rustfmt".into()],
+        "javascript" | "typescript" => vec!["eslint".into(), "prettier".into()],
+        "python" => vec!["pylint".into(), "black".into(), "mypy".into()],
+        "go" => vec!["golangci-lint".into(), "gofmt".into()],
+        "elixir" => vec!["credo".into(), "mix format".into()],
+        "erlang" => vec!["dialyzer".into()],
+        "java" => vec!["spotbugs".into(), "checkstyle".into()],
+        "c" | "cpp" => vec!["clang-tidy".into(), "cppcheck".into()],
+        "csharp" => vec!["roslyn".into(), "sonarqube".into()],
+        "ruby" => vec!["rubocop".into()],
         _ => vec![],
     }
 }
@@ -117,35 +103,31 @@ pub fn recommended_linters(language: &str) -> Vec<&'static str> {
 /// Returns file patterns from the language metadata if available,
 /// otherwise falls back to a hardcoded list for common languages.
 #[must_use]
-pub fn file_patterns(language: &str) -> Vec<&'static str> {
+pub fn file_patterns(language: &str) -> Vec<String> {
     // Try to get from language metadata first
     if let Some(lang) = LANGUAGE_REGISTRY.get_language(language) {
         if !lang.file_patterns.is_empty() {
-            return lang
-                .file_patterns
-                .iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>()
-                .into_iter()
-                .map(|s| {
-                    // SAFETY: The registry is static and lives for 'static lifetime
-                    let leaked: &'static str = Box::leak(s.to_owned().into_boxed_str());
-                    leaked
-                })
-                .collect();
+            return lang.file_patterns.clone();
         }
     }
 
     // Fallback to hardcoded defaults for languages without metadata
     match language {
-        "rust" => vec!["Cargo.toml", "Cargo.lock", "build.rs"],
-        "javascript" | "typescript" => vec!["package.json", "tsconfig.json", "webpack.config.js"],
-        "python" => vec!["requirements.txt", "setup.py", "pyproject.toml", "Pipfile"],
-        "go" => vec!["go.mod", "go.sum"],
-        "elixir" => vec!["mix.exs", "mix.lock"],
-        "erlang" => vec!["rebar.config", "erlang.mk"],
-        "java" => vec!["pom.xml", "build.gradle"],
-        "ruby" => vec!["Gemfile", "Gemfile.lock", "Rakefile"],
+        "rust" => vec!["Cargo.toml".into(), "Cargo.lock".into(), "build.rs".into()],
+        "javascript" | "typescript" => {
+            vec!["package.json".into(), "tsconfig.json".into(), "webpack.config.js".into()]
+        }
+        "python" => vec![
+            "requirements.txt".into(),
+            "setup.py".into(),
+            "pyproject.toml".into(),
+            "Pipfile".into(),
+        ],
+        "go" => vec!["go.mod".into(), "go.sum".into()],
+        "elixir" => vec!["mix.exs".into(), "mix.lock".into()],
+        "erlang" => vec!["rebar.config".into(), "erlang.mk".into()],
+        "java" => vec!["pom.xml".into(), "build.gradle".into()],
+        "ruby" => vec!["Gemfile".into(), "Gemfile.lock".into(), "Rakefile".into()],
         _ => vec![],
     }
 }

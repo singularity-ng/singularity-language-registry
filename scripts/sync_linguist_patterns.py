@@ -16,7 +16,7 @@ Sources:
 import re
 import sys
 import urllib.request
-from typing import List, Set
+from typing import Set
 import yaml
 
 # GitHub Linguist URLs
