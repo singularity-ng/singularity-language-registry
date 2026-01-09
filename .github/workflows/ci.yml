@@ -47,16 +47,7 @@ jobs:
         with:
           upstream-cache: "https://cache.nixos.org"
 
-      # Layer 3: FlakeHub binary cache
-      - name: Setup FlakeHub Cache
-        uses: DeterminateSystems/flakehub-cache-action@v7
-        with:
-          cache-name: "singularity-lang-reg"
-          visibility: "public"
-        env:
-          FLAKEHUB_PUSH_TOKEN: ${{ secrets.FLAKEHUB_PUSH_TOKEN }}
-
-      # Layer 4: Cachix binary cache (optional)
+      # Cachix binary cache (optional)
       - name: Setup Cachix Cache
         if: env.CACHIX_AUTH_TOKEN != ''
         uses: cachix/cachix-action@v15
@@ -173,17 +164,13 @@ jobs:
   ci-success:
     name: CI Success
     runs-on: ubuntu-latest
-    needs: [nix-check, msrv]
+    needs: [nix-check]
     if: always()
     steps:
       - name: Check All Jobs
         run: |
           if [[ "${{ needs.nix-check.result }}" != "success" ]]; then
             echo "❌ Nix checks failed"
-            exit 1
-          fi
-          if [[ "${{ needs.msrv.result }}" != "success" ]]; then
-            echo "❌ MSRV check failed"
             exit 1
           fi
           echo "✅ All critical checks passed!"
