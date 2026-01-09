@@ -11,8 +11,6 @@ jobs:
   auto-approve:
     name: Auto Approve PR
     runs-on: ubuntu-latest
-    # Only run after CI succeeds
-    needs: []
     if: github.event.pull_request.draft == false
     steps:
       - name: Wait for CI to pass
