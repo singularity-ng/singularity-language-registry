@@ -216,6 +216,10 @@ pub fn get_known_support() -> MetadataSource {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::missing_panics_doc,
+    reason = "Test functions don't need panic documentation"
+)]
 mod tests {
     use super::*;
 

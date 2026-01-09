@@ -395,7 +395,11 @@ fn simple_pattern_match(pattern: &str, content: &str) -> bool {
 }
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, reason = "Tests are allowed to unwrap")]
+#[allow(
+    clippy::unwrap_used,
+    clippy::missing_panics_doc,
+    reason = "Tests are allowed to unwrap and don't need panic documentation"
+)]
 mod tests {
     use super::*;
 
