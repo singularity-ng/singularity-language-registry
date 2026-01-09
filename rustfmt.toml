@@ -1,0 +1,9 @@
+# Rustfmt configuration
+# See: https://rust-lang.github.io/rustfmt/
+
+# Ignore auto-generated files (from GitHub Linguist sync)
+ignore = [
+    "src/languages_metadata_generated.rs",
+    "src/heuristics_generated.rs",
+    "src/file_classifier_generated.rs",
+]
