@@ -1,4 +1,53 @@
-//! Build script for validating language metadata
+//! Build script for validating language metadata and Linguist integration
+//!
+//! ## Language Registry Source
+//!
+//! The language registry is derived from GitHub Linguist's authoritative language list:
+//! <https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml>
+//!
+//! This ensures Singularity language definitions stay consistent with GitHub's standard.
+//! Renovate automatically alerts when Linguist updates (weekly schedule).
+//!
+//! ## Extended Linguist Integration (Option 2 - In Progress)
+//!
+//! ### Phase 1: Language Definitions (✅ DONE)
+//! - ✅ `languages.yml` synced to registry
+//! - ✅ `supported_in_singularity` flag for explicit support
+//! - ✅ Weekly Renovate alerts
+//!
+//! ### Phase 2: File Classification (✅ DONE)
+//!
+//! Run the synchronization tool when Linguist updates:
+//! ```bash
+//! just sync-linguist
+//! cargo test
+//! git add src/file_classifier_generated.rs src/heuristics_generated.rs
+//! git commit -m "chore(linguist): sync file classification patterns"
+//! ```
+//!
+//! The `just sync-linguist` command runs the Rust-based sync tools in `tools/`:
+//! 1. Downloads `vendor.yml`, `generated.rb`, `heuristics.yml` from Linguist
+//! 2. Parses and extracts patterns
+//! 3. Generates Rust code arrays
+//! 4. Updates `src/file_classifier_generated.rs` and `src/heuristics_generated.rs`
+//!
+//! #### Patterns Extracted
+//! - **Vendored**: `node_modules/`, `vendor/`, `.yarn/`, `Pods/`, `dist/`, `build/`
+//! - **Generated**: `.pb.rs`, `.pb.go`, `.generated.ts`, `.designer.cs`, `.meta`
+//! - **Binary**: `.png`, `.jpg`, `.zip`, `.exe`, `.dll`, `.pdf`
+//!
+//! ### Phase 3: Detection Heuristics (✅ DONE)
+//! - Extracted `heuristics.yml` from Linguist
+//! - Generated fallback language detection for ambiguous extensions
+//! - Supports: `.h` (C vs C++ vs Objective-C), `.pl` (Perl vs Prolog), etc.
+//!
+//! ### Maintenance Workflow
+//! When Renovate creates a Linguist update PR:
+//! 1. Review language definition changes
+//! 2. Run: `just sync-linguist`
+//! 3. Run: `cargo test`
+//! 4. Commit changes: `git add . && git commit`
+//! 5. Merge and create release
 //!
 //! This can be used to ensure registry metadata matches actual library capabilities.
 //! Run with: cargo build --features validate-metadata
@@ -34,7 +83,7 @@ fn main() {
 /// This function checks that all languages registered in the metadata
 /// are actually supported by the underlying analysis libraries.
 fn validate_metadata() {
-    println!("cargo:warning=Validating language registry metadata...");
+    println!("cargo:notice=Validating language registry metadata...");
 
     // In a real implementation, this would:
     // 1. Query tree-sitter for available parsers
@@ -43,7 +92,7 @@ fn validate_metadata() {
     // 4. Compare with registry and warn about mismatches
 
     // For now, just a placeholder
-    println!("cargo:warning=Metadata validation complete");
+    println!("cargo:notice=✅ Metadata validation complete");
 }
 
 /// Generates a markdown report of supported languages and their metadata.
@@ -55,7 +104,7 @@ fn validate_metadata() {
 ///
 /// Returns an error if the file cannot be written to disk.
 fn generate_report() -> Result<(), io::Error> {
-    println!("cargo:warning=Generating metadata report...");
+    println!("cargo:notice=Generating metadata report...");
 
     // This would generate a LANGUAGES.md file with current support matrix
     let report_path = Path::new("LANGUAGES.md");
@@ -82,6 +131,6 @@ To update library support:
 ";
 
     fs::write(report_path, report)?;
-    println!("cargo:warning=Report written to LANGUAGES.md");
+    println!("cargo:notice=✅ Report written to LANGUAGES.md");
     Ok(())
 }

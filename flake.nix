@@ -26,15 +26,27 @@
           extensions = [ "rust-src" "rust-analyzer" "clippy" "rustfmt" ];
         };
 
+        # Nightly toolchain for rustfmt (needed for ignore option in rustfmt.toml)
+        nightlyRustfmt = pkgs.rust-bin.nightly.latest.rustfmt;
+
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
+
+        # Source filter that includes JSON files (needed for include_str! fixtures)
+        srcFilter = path: type:
+          (craneLib.filterCargoSources path type) ||
+          (builtins.match ".*\.json$" path != null);
 
         # Common arguments for crane builds
         commonArgs = {
-          src = craneLib.cleanCargoSource ./.;
+          src = pkgs.lib.cleanSourceWith {
+            src = ./.;
+            filter = srcFilter;
+          };
           strictDeps = true;
 
           buildInputs = with pkgs; [
             # Add runtime dependencies here if needed
+            openssl
           ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
             # MacOS specific dependencies
             pkgs.libiconv
@@ -45,7 +57,7 @@
             rustToolchain
             pkg-config
             clang
-            lld  # Required for Rust linker (-fuse-ld=lld)
+            lld # Required for Rust linker (-fuse-ld=lld)
           ];
         };
 
@@ -98,29 +110,29 @@
 
           nativeBuildInputs = with pkgs; [
             # Core Rust toolchain (always needed)
-            rustToolchain      # cargo, rustc, rustfmt, clippy, rust-analyzer
-            rust-analyzer      # IDE support
+            rustToolchain # cargo, rustc, rustfmt, clippy, rust-analyzer
+            rust-analyzer # IDE support
 
             # Essential cargo tools (daily use)
-            cargo-edit         # cargo add/rm/upgrade commands
-            cargo-watch        # Auto-run on file changes
-            cargo-nextest      # Faster test runner
-            cargo-expand       # Macro debugging
+            cargo-edit # cargo add/rm/upgrade commands
+            cargo-watch # Auto-run on file changes
+            cargo-nextest # Faster test runner
+            cargo-expand # Macro debugging
 
             # Quality & security (frequent use)
-            cargo-audit        # Security vulnerability checking
-            cargo-outdated     # Dependency updates
-            cargo-machete      # Unused dependency detection
-            cargo-deny         # License and security policy
+            cargo-audit # Security vulnerability checking
+            cargo-outdated # Dependency updates
+            cargo-machete # Unused dependency detection
+            cargo-deny # License and security policy
 
             # Performance tools (occasional use)
-            cargo-tarpaulin    # Code coverage
-            cargo-criterion    # Benchmarking
+            cargo-tarpaulin # Code coverage
+            cargo-criterion # Benchmarking
 
             # Development tools
-            git                # Version control
-            gh                 # GitHub CLI
-            just               # Task runner
+            git # Version control
+            gh # GitHub CLI
+            just # Task runner
           ];
 
           shellHook = ''
@@ -157,8 +169,16 @@
         checks = {
           inherit singularity-language-registry;
 
-          # Format check
-          fmt = craneLib.cargoFmt commonArgs;
+          # Format check using nightly rustfmt (supports ignore option in rustfmt.toml)
+          fmt = pkgs.runCommand "cargo-fmt-check" {
+            src = craneLib.cleanCargoSource ./.;
+            nativeBuildInputs = [ nightlyRustfmt pkgs.cargo ];
+          } ''
+            cd $src
+            cargo fmt --check
+            mkdir -p $out
+            echo "Format check passed" > $out/result
+          '';
 
           # Clippy check with pedantic mode
           clippy = craneLib.cargoClippy (commonArgs // {

@@ -5,7 +5,7 @@
 
 Centralized language registry for all Singularity analysis engines.
 
-**[📚 View Documentation](https://singularity-ng.github.io/singularity-language-registry/)** | **[📖 Setup Guide](./DOCS_SETUP.md)**
+**[📚 Documentation](https://singularity-ng.github.io/singularity-language-registry/)** | **[⚡ Installation Guide](./INSTALLATION.md)** | **[🔧 Setup Guide](./DOCS_SETUP.md)**
 
 ## Purpose
 
@@ -32,19 +32,29 @@ language_registry (independent)
 
 ## Features
 
-- **18+ languages** with complete definitions
-- **Fast lookups** - extension, alias, and MIME type mapping
-- **Family-based grouping** - BEAM, Systems, Web, JVM, C-like, Scripting
-- **Capability tracking** - RCA support, AST-Grep support, compilation type
-- **Pattern signatures** - language syntax (NOT libraries) for cross-language detection
+- **600+ languages** from GitHub Linguist with complete metadata
+- **Fast lookups** - optimized HashMaps for extensions, aliases, MIME types
+- **Content detection** - shebang parsing, heuristics, and pattern matching
+- **File classification** - vendored, generated, binary, documentation detection
+- **Family grouping** - BEAM, Systems, Web, JVM, C-like, Scripting, and more
+- **Capability tracking** - RCA, AST-Grep, linting, parsing, security, performance
+- **Zero dependencies** on other Singularity crates
 - **Serializable** - all language info can be exported as JSON
 
 ## Installation
 
-### Using Cargo
+> **📖 See [INSTALLATION.md](./INSTALLATION.md) for complete guide including Mix (Elixir) dependencies and binary downloads**
+
+### Quick Start - Rust
 
 ```bash
 cargo add singularity-language-registry
+```
+
+Or in `Cargo.toml`:
+```toml
+[dependencies]
+singularity-language-registry = { git = "https://github.com/Singularity-ng/singularity-language-registry", tag = "latest" }
 ```
 
 ### Using Nix
@@ -108,11 +118,11 @@ if let Some(lang) = detect_from_content(python_code, None) {
 ```rust
 use singularity_language_registry::{
     LanguageStats,
+    LanguageCapability,
     languages_by_families,
     same_family,
     recommended_linters,
     supports_feature,
-    AnalysisFeature,
 };
 
 // Get statistics
@@ -124,13 +134,13 @@ if same_family("elixir", "erlang") {
     println!("Both are BEAM languages!");
 }
 
-// Get recommended tools
+// Get recommended tools (from metadata or fallback)
 let linters = recommended_linters("rust");
 println!("Rust linters: {:?}", linters);
 
-// Check feature support
-if supports_feature("rust", AnalysisFeature::RCA) {
-    println!("Rust supports RCA analysis!");
+// Check capability support
+if supports_feature("rust", LanguageCapability::Security) {
+    println!("Rust supports security analysis!");
 }
 ```
 
@@ -138,11 +148,12 @@ if supports_feature("rust", AnalysisFeature::RCA) {
 
 ### Core Types
 
-- `LanguageInfo` - Complete language metadata (name, extensions, family, etc.)
+- `LanguageInfo` - Complete language metadata (name, extensions, family, linters, etc.)
 - `LanguageRegistry` - Main registry struct (usually accessed via LANGUAGE_REGISTRY)
+- `LanguageCapability` - Enum of analysis capabilities (RCA, ASTGrep, Security, etc.)
 - `PatternSignatures` - Language syntax patterns for detection
 - `LanguageStats` - Statistics about language support
-- `AnalysisFeature` - Enum of analysis capabilities
+- `FileClassifier` - Classify files as vendored, generated, binary, or documentation
 
 ### Detection Functions
 
@@ -150,8 +161,9 @@ if supports_feature("rust", AnalysisFeature::RCA) {
 - `detect_from_content(content, fallback_ext)` - Detect from file content
 - `detect_from_shebang(content)` - Detect from shebang line
 - `detect_from_patterns(content)` - Detect from content patterns
+- `detect_from_heuristics(ext, content)` - Disambiguate by extension + content heuristics
 - `detect_special_files(filename)` - Detect special files (Makefile, Dockerfile, etc.)
-- `detection_confidence(path, content)` - Get detection confidence (0.0-1.0)
+- `is_detectable(language)` - Check if a language is detectable
 
 ### Registry Functions
 
@@ -170,13 +182,68 @@ if supports_feature("rust", AnalysisFeature::RCA) {
 - `file_patterns(language)` - Get common file patterns for a language
 - `supports_feature(language, feature)` - Check if language supports a feature
 
+### Capability Registration
+
+Every language entry starts with a clean slate for runtime capabilities (RCA, linting, parsing, etc.). Downstream engines flip bits as they ship support via `LanguageCapability` and the helper APIs.
+
+```rust
+use singularity_language_registry::{
+    LanguageCapability, languages_with_capability, register_capability_support,
+    set_language_capability,
+};
+
+// Enable linting support for Rust at runtime.
+set_language_capability("rust", LanguageCapability::Linting, true)?;
+
+// Enumerate the languages that now advertise linting.
+let linting_langs = languages_with_capability(LanguageCapability::Linting);
+println!("Linting-ready languages: {}", linting_langs.len());
+
+// Bulk-enable parsing for a suite of languages.
+register_capability_support(
+    LanguageCapability::Parsing,
+    &["rust", "go", "python", "javascript"],
+)?;
+```
+
+`register_rca_capabilities` now builds on the same mechanism (`LanguageCapability::RCA`), so all capability registration flows re-use a single atomic bitfield per language.
+
 ## Supported Languages
 
-- **BEAM**: Elixir, Erlang, Gleam
-- **Systems**: Rust, C, C++, Go
-- **Web**: JavaScript, TypeScript, Python
-- **JVM**: Java, Kotlin
-- **Other**: C#, Bash, Lua, SQL, TOML, YAML, JSON, Markdown, Dockerfile
+600+ languages from GitHub Linguist, including:
+
+- **BEAM**: Elixir, Erlang, Gleam, LFE
+- **Systems**: Rust, C, C++, Go, Zig, Assembly
+- **Web**: JavaScript, TypeScript, HTML, CSS, SCSS, Vue, Svelte
+- **JVM**: Java, Kotlin, Scala, Clojure, Groovy
+- **Scripting**: Python, Ruby, Perl, PHP, Lua, Shell
+- **Functional**: Haskell, OCaml, F#, Elm, PureScript
+- **Data**: SQL, GraphQL, JSON, YAML, TOML, XML
+- **Config**: Dockerfile, Makefile, Nix, Terraform, Ansible
+- **And many more...** (see `supported_languages()` for full list)
+
+## File Classification
+
+Classify files using GitHub Linguist patterns:
+
+```rust
+use singularity_language_registry::{FileClassifier, FileClass};
+
+let classifier = FileClassifier::default();
+
+// Check if file should be analyzed
+if classifier.should_analyze("src/main.rs") {
+    println!("Analyze this file");
+}
+
+// Get file classification
+match classifier.classify("node_modules/pkg/index.js") {
+    FileClass::Vendored => println!("Skip vendored file"),
+    FileClass::Generated => println!("Skip generated file"),
+    FileClass::Source => println!("Analyze source file"),
+    _ => {}
+}
+```
 
 ## Zero Dependencies
 

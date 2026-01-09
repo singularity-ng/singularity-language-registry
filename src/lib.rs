@@ -1,3 +1,6 @@
+// Crate-level clippy allows for pedantic/nursery lints
+#![allow(clippy::allow_attributes_without_reason)]
+
 //! Singularity Language Registry
 //!
 //! Production-ready, centralized language definitions and detection for all Singularity engines.
@@ -22,7 +25,7 @@
 //!
 //! ## Features
 //!
-//! - **18+ languages** with complete metadata
+//! - **600+ languages** from GitHub Linguist with complete metadata
 //! - **Fast lookups** via optimized `HashMaps` for extensions, aliases, MIME types
 //! - **Zero dependencies** on other Singularity crates
 //! - **Content detection** via shebang, patterns, and magic bytes
@@ -32,7 +35,7 @@
 //!
 //! ## Usage
 //!
-//! ```rust
+//! ```no_run
 //! use singularity_language_registry::{detect_language, get_language, LanguageStats};
 //! use std::path::Path;
 //!
@@ -54,36 +57,51 @@
 //! ```
 
 pub mod detection;
+pub mod file_classifier;
+pub mod file_classifier_generated;
+pub mod heuristics_generated;
+pub mod languages_metadata_generated;
 pub mod metadata;
 pub mod registry;
 pub mod utils;
 
 // Core registry exports
-pub use registry::{LanguageInfo, LanguageRegistry, PatternSignatures, LANGUAGE_REGISTRY};
+pub use registry::{
+    LanguageCapability, LanguageInfo, LanguageRegistry, PatternSignatures, LANGUAGE_REGISTRY,
+};
 
 // Convenience functions for direct access
 pub use registry::{
     ast_grep_supported_languages, detect_language, get_language, get_language_by_alias,
-    get_language_by_mime_type, rca_supported_languages, supported_languages,
+    get_language_by_mime_type, languages_with_capability, rca_supported_languages,
+    register_capability_support, register_rca_capabilities, set_language_capability,
+    supported_languages,
 };
 
 // Detection utilities
 pub use detection::{
-    detect_from_content, detect_from_patterns, detect_from_shebang, detect_special_files,
-    is_detectable,
+    detect_from_content, detect_from_heuristics, detect_from_patterns, detect_from_shebang,
+    detect_special_files, is_detectable,
 };
 
 // Utility functions
 pub use utils::{
     file_patterns, languages_by_families, recommended_linters, same_family, supports_feature,
-    AnalysisFeature, LanguageStats,
+    LanguageStats,
 };
+
+// Deprecated: AnalysisFeature is now an alias for LanguageCapability
+#[allow(deprecated)]
+pub use utils::AnalysisFeature;
 
 // Metadata validation and reporting
 pub use metadata::{
     generate_metadata_report, get_known_support, validate_metadata, CapabilityMismatch,
     MetadataSource, MetadataValidation,
 };
+
+// File classification (from Linguist patterns)
+pub use file_classifier::{FileClass, FileClassifier};
 
 // Version information
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

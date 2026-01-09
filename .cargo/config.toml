@@ -3,39 +3,33 @@
 # Note: Use 'cargo login --registry github' to set token
 github = { index = "sparse+https://github.com/Singularity-ng/_cargo-index/" }
 
-# Cloudsmith - Enterprise private registry (if you have it)
-# cloudsmith = { index = "https://dl.cloudsmith.io/basic/your-org/cargo/cargo/index.git" }
-
-# Artifactory - Common in enterprises
-# artifactory = { index = "https://artifactory.company.com/artifactory/api/cargo/cargo-local" }
-
-# Self-hosted Kellnr
-# kellnr = { index = "sparse+https://kellnr.company.com/api/v1/crates/" }
-
 [registry]
 # Default registry (can override to use private)
 default = "crates-io"  # Change to "github" for private-by-default
 
 [net]
 git-fetch-with-cli = true  # Use git CLI for auth (better for enterprise)
-
-[http]
-# For self-signed certificates in enterprise
-# cainfo = "/path/to/enterprise-ca-bundle.crt"
-
-# Optional: Mirror configuration for faster downloads
-# [source.crates-io]
-# replace-with = "crates-io-mirror"
-
-# [source.crates-io-mirror]
-# registry = "sparse+https://index.crates.io/"
+retry = 3
 
 [build]
 # Incremental compilation for local dev
 incremental = true
+jobs = 4  # Limit to 4 parallel jobs to prevent system overload
 
-# Enterprise-specific build settings
+# Stricter type checking to match vectordrive CI environment
+[target.'cfg(all())']
+rustflags = [
+    "-D", "warnings",              # Deny all warnings (treat as errors)
+    "-W", "clippy::all",           # Enable all clippy warnings
+    "-W", "clippy::pedantic",      # Pedantic clippy checks
+]
+
+# Use system GCC linker on x86_64 Linux to avoid Nix clang/vDSO issues
 [target.x86_64-unknown-linux-gnu]
+linker = "gcc"
+
+# Use Clang/LLD for linking on AArch64 Linux (for LLVM Bitcode compatibility)
+[target.aarch64-unknown-linux-gnu]
 linker = "clang"
 rustflags = ["-C", "link-arg=-fuse-ld=lld"]
 
