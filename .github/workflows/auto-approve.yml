@@ -1,0 +1,42 @@
+# Auto-approve PRs when CI passes
+# Uses a bot PAT to approve PRs, allowing merge without human review for CI-passing PRs
+name: Auto Approve
+
+on:
+  # Use pull_request_target to access secrets (runs in base branch context)
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  auto-approve:
+    name: Auto Approve PR
+    runs-on: ubuntu-latest
+    # Only run after CI succeeds
+    needs: []
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Wait for CI to pass
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'Nix Checks'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+          allowed-conclusions: success
+
+      - name: Wait for snapshot validation
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'validate-snapshot'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+          allowed-conclusions: success
+
+      - name: Auto approve PR
+        uses: hmarr/auto-approve-action@v4
+        with:
+          # Use bot PAT for approval (must have repo scope)
+          # The token owner must have write access to the repo
+          github-token: ${{ secrets.ORG_GITHUB_TOKEN }}
+          review-message: "Auto-approved: All CI checks passed ✅"
