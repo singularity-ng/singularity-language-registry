@@ -22,7 +22,7 @@
 //!
 //! ## Features
 //!
-//! - **18+ languages** with complete metadata
+//! - **600+ languages** from GitHub Linguist with complete metadata
 //! - **Fast lookups** via optimized `HashMaps` for extensions, aliases, MIME types
 //! - **Zero dependencies** on other Singularity crates
 //! - **Content detection** via shebang, patterns, and magic bytes
@@ -55,6 +55,9 @@
 
 pub mod detection;
 pub mod file_classifier;
+pub mod file_classifier_generated;
+pub mod heuristics_generated;
+pub mod languages_metadata_generated;
 pub mod metadata;
 pub mod registry;
 pub mod utils;
@@ -74,15 +77,19 @@ pub use registry::{
 
 // Detection utilities
 pub use detection::{
-    detect_from_content, detect_from_patterns, detect_from_shebang, detect_special_files,
-    is_detectable,
+    detect_from_content, detect_from_heuristics, detect_from_patterns, detect_from_shebang,
+    detect_special_files, is_detectable,
 };
 
 // Utility functions
 pub use utils::{
     file_patterns, languages_by_families, recommended_linters, same_family, supports_feature,
-    AnalysisFeature, LanguageStats,
+    LanguageStats,
 };
+
+// Deprecated: AnalysisFeature is now an alias for LanguageCapability
+#[allow(deprecated)]
+pub use utils::AnalysisFeature;
 
 // Metadata validation and reporting
 pub use metadata::{

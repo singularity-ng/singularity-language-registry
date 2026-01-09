@@ -78,6 +78,10 @@ pub struct LanguageInfoSnapshot {
     pub language_type: String,
     #[serde(default)]
     pub pattern_signatures: PatternSignatures,
+    #[serde(default)]
+    pub linters: Vec<String>,
+    #[serde(default)]
+    pub file_patterns: Vec<String>,
 }
 
 /// Comprehensive language information
@@ -126,21 +130,43 @@ pub struct LanguageInfo {
     /// Pattern signatures for cross-language pattern detection
     #[serde(default)]
     pub pattern_signatures: PatternSignatures,
+    /// Recommended linters/formatters for this language
+    #[serde(default)]
+    pub linters: Vec<String>,
+    /// Common project files associated with this language (e.g., Cargo.toml for Rust)
+    #[serde(default)]
+    pub file_patterns: Vec<String>,
     /// Dynamic capability bits controlled by downstream engines
     #[serde(skip)]
     pub capabilities: AtomicU32,
 }
 
 /// Explicit capability bits that downstream engines can toggle.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+///
+/// This enum covers both explicit capabilities (toggled at runtime) and
+/// implicit analysis features (determined by language properties).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[repr(u8)]
 #[non_exhaustive]
 pub enum LanguageCapability {
+    /// Root Cause Analysis support
     RCA = 0,
+    /// AST-grep pattern matching support
     ASTGrep = 1,
+    /// Linting/formatting tools available
     Linting = 2,
+    /// Tree-sitter parsing available
     Parsing = 3,
+    /// Code engine analysis support
     CodeEngine = 4,
+    /// Tree-sitter grammar available (alias for Parsing, for clarity)
+    TreeSitter = 5,
+    /// Cyclomatic complexity analysis support
+    Complexity = 6,
+    /// Security vulnerability scanning support
+    Security = 7,
+    /// Performance profiling/analysis support
+    Performance = 8,
 }
 
 impl LanguageCapability {
@@ -190,7 +216,11 @@ impl LanguageInfo {
             }
             LanguageCapability::Linting
             | LanguageCapability::Parsing
-            | LanguageCapability::CodeEngine => {
+            | LanguageCapability::CodeEngine
+            | LanguageCapability::TreeSitter
+            | LanguageCapability::Complexity
+            | LanguageCapability::Security
+            | LanguageCapability::Performance => {
                 // These capabilities are tracked via the bit flags only
             }
         }
@@ -298,6 +328,8 @@ impl LanguageRegistry {
                 is_compiled: snap.is_compiled,
                 language_type: snap.language_type,
                 pattern_signatures: snap.pattern_signatures,
+                linters: snap.linters,
+                file_patterns: snap.file_patterns,
                 capabilities: AtomicU32::new(0),
             });
         }
@@ -360,6 +392,8 @@ impl LanguageRegistry {
                 is_compiled: snap.is_compiled,
                 language_type: snap.language_type,
                 pattern_signatures: snap.pattern_signatures,
+                linters: snap.linters,
+                file_patterns: snap.file_patterns,
                 capabilities: AtomicU32::new(0),
             });
         }

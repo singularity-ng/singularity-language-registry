@@ -176,7 +176,7 @@ pub const VENDORED_PATTERNS_FROM_LINGUIST: &[&str] = &[
     "^debian/",
     "^deps/",
     "^rebar$",
-]
+];
 
 /// Generated file patterns (from GitHub Linguist generated.rb)
 pub const GENERATED_PATTERNS_FROM_LINGUIST: &[&str] = &[
@@ -262,8 +262,7 @@ pub const GENERATED_PATTERNS_FROM_LINGUIST: &[&str] = &[
     "value",
     "version",
     "}).call(this);",
-]
+];
 
 /// Binary file extensions detected by GitHub Linguist
-pub const BINARY_PATTERNS_FROM_LINGUIST: &[&str] = &[
-];
+pub const BINARY_PATTERNS_FROM_LINGUIST: &[&str] = &[];

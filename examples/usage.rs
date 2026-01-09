@@ -15,7 +15,7 @@ use singularity_language_registry::{
     ast_grep_supported_languages, detect_from_content, detect_language, get_language,
     get_language_by_alias, is_detectable, languages_by_families, languages_with_capability,
     rca_supported_languages, recommended_linters, same_family, set_language_capability,
-    supported_languages, supports_feature, AnalysisFeature, LanguageCapability, LanguageStats,
+    supported_languages, supports_feature, LanguageCapability, LanguageStats,
 };
 use std::path::Path;
 
@@ -115,16 +115,17 @@ fn main() {
         println!("  {lang} -> {linters:?}");
     }
 
-    // 10. Feature support
+    // 10. Feature support (using LanguageCapability)
     println!("\n10. Feature Support:");
     let features = [
-        ("rust", AnalysisFeature::RCA),
-        ("elixir", AnalysisFeature::ASTGrep),
-        ("python", AnalysisFeature::Complexity),
+        ("rust", LanguageCapability::RCA),
+        ("elixir", LanguageCapability::ASTGrep),
+        ("python", LanguageCapability::Complexity),
+        ("javascript", LanguageCapability::Security),
     ];
-    for (lang, feature) in features {
-        let supported = supports_feature(lang, feature);
-        println!("  {lang} supports {feature:?}: {supported}");
+    for (lang, capability) in features {
+        let supported = supports_feature(lang, capability);
+        println!("  {lang} supports {capability:?}: {supported}");
     }
 
     // 11. List all supported languages

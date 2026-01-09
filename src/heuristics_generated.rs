@@ -6,14 +6,14 @@
 //! The data model mirrors Linguist's disambiguation rules so downstream consumers
 //! can evaluate ambiguous extensions without depending on Linguist directly.
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct HeuristicRuleCondition {
 pub patterns: &'static [&'static str],
 pub named_pattern: Option<&'static str>,
 pub negative_patterns: &'static [&'static str],
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct HeuristicRule {
 pub language: &'static str,
 pub patterns: &'static [&'static str],
@@ -22,7 +22,7 @@ pub negative_patterns: &'static [&'static str],
 pub and: &'static [HeuristicRuleCondition],
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct HeuristicEntry {
 pub extensions: &'static [&'static str],
 pub rules: &'static [HeuristicRule],

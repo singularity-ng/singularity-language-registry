@@ -6,7 +6,7 @@
 //! Contains comprehensive language definitions including extensions,
 //! colors, interpreters, and editor modes.
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct LanguageMetadata {
 pub name: &'static str,
 pub language_type: &'static str,

@@ -11,6 +11,8 @@
     "family": "BEAM",
     "is_compiled": true,
     "language_type": "programming",
+    "linters": ["credo", "mix format"],
+    "file_patterns": ["mix.exs", "mix.lock"],
     "pattern_signatures": {
       "error_handling_syntax": [],
       "async_syntax": [],
@@ -71,6 +73,8 @@
     "family": "Systems",
     "is_compiled": true,
     "language_type": "programming",
+    "linters": ["clippy", "rustfmt"],
+    "file_patterns": ["Cargo.toml", "Cargo.lock", "build.rs"],
     "pattern_signatures": {
       "error_handling_syntax": ["Result<","Option<","?","unwrap","expect"],
       "async_syntax": ["async","await",".await"],
