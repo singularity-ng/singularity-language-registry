@@ -31,9 +31,17 @@
 
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
+        # Source filter that includes JSON files (needed for include_str! fixtures)
+        srcFilter = path: type:
+          (craneLib.filterCargoSources path type) ||
+          (builtins.match ".*\.json$" path != null);
+
         # Common arguments for crane builds
         commonArgs = {
-          src = craneLib.cleanCargoSource ./.;
+          src = pkgs.lib.cleanSourceWith {
+            src = ./.;
+            filter = srcFilter;
+          };
           strictDeps = true;
 
           buildInputs = with pkgs; [
