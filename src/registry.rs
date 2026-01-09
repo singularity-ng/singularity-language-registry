@@ -360,10 +360,7 @@ impl LanguageRegistry {
 
         let snapshots: Vec<LanguageInfoSnapshot> =
             serde_json::from_str(FIXTURE_CONTENTS).unwrap_or_else(|e| {
-                panic!(
-                    "Failed to parse embedded test fixture builtin_snapshot.json: {}",
-                    e
-                )
+                panic!("Failed to parse embedded test fixture builtin_snapshot.json: {e}")
             });
 
         for snap in snapshots {
