@@ -337,12 +337,11 @@ impl LanguageRegistry {
         registry
     }
 
-    /// Register all supported languages
+    /// Register all supported languages from the embedded test fixture.
     ///
     /// # Panics
     ///
-    /// Panics if the test fixture file at `tests/fixtures/builtin_snapshot.json`
-    /// cannot be read or if its JSON content cannot be parsed.
+    /// Panics if the embedded JSON content cannot be parsed.
     #[allow(
         clippy::too_many_lines,
         reason = "Language registration data is necessarily large; splitting would reduce readability"
@@ -356,23 +355,14 @@ impl LanguageRegistry {
         reason = "Test fixture loading function - panics are expected on invalid fixtures"
     )]
     fn register_all_languages(&mut self) {
-        // For tests we load a fixture file with a canonical snapshot. This
-        // keeps the source file small and ensures test runs are reproducible
-        // without requiring the full snapshot env var.
-        let fixture_path = Path::new("tests/fixtures/builtin_snapshot.json");
-        let contents = fs::read_to_string(fixture_path).unwrap_or_else(|e| {
-            panic!(
-                "Failed to read test fixture {}: {}",
-                fixture_path.display(),
-                e
-            )
-        });
+        // Embed the fixture at compile time so tests work in any build environment
+        const FIXTURE_CONTENTS: &str =
+            include_str!("../tests/fixtures/builtin_snapshot.json");
 
         let snapshots: Vec<LanguageInfoSnapshot> =
-            serde_json::from_str(&contents).unwrap_or_else(|e| {
+            serde_json::from_str(FIXTURE_CONTENTS).unwrap_or_else(|e| {
                 panic!(
-                    "Failed to parse test fixture {}: {}",
-                    fixture_path.display(),
+                    "Failed to parse embedded test fixture builtin_snapshot.json: {}",
                     e
                 )
             });
