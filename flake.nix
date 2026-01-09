@@ -26,6 +26,9 @@
           extensions = [ "rust-src" "rust-analyzer" "clippy" "rustfmt" ];
         };
 
+        # Nightly toolchain for rustfmt (needed for ignore option in rustfmt.toml)
+        nightlyRustfmt = pkgs.rust-bin.nightly.latest.rustfmt;
+
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         # Common arguments for crane builds
@@ -158,8 +161,16 @@
         checks = {
           inherit singularity-language-registry;
 
-          # Format check
-          fmt = craneLib.cargoFmt commonArgs;
+          # Format check using nightly rustfmt (supports ignore option in rustfmt.toml)
+          fmt = pkgs.runCommand "cargo-fmt-check" {
+            src = craneLib.cleanCargoSource ./.;
+            nativeBuildInputs = [ nightlyRustfmt pkgs.cargo ];
+          } ''
+            cd $src
+            cargo fmt --check
+            mkdir -p $out
+            echo "Format check passed" > $out/result
+          '';
 
           # Clippy check with pedantic mode
           clippy = craneLib.cargoClippy (commonArgs // {
