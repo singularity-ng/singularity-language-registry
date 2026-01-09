@@ -73,14 +73,19 @@ jobs:
 
       - name: Parse Confidence Score
         id: parse
+        env:
+          RAW_RESPONSE: ${{ steps.gemini.outputs.summary }}
+          GEMINI_OUTCOME: ${{ steps.gemini.outcome }}
         run: |
-          RESPONSE='${{ steps.gemini.outputs.summary }}'
-          GEMINI_OUTCOME='${{ steps.gemini.outcome }}'
           echo "Gemini outcome: $GEMINI_OUTCOME"
-          echo "Raw response: $RESPONSE"
+          echo "Raw response: $RAW_RESPONSE"
+
+          # Strip markdown code fences if present (Gemini wraps JSON in ```json ... ```)
+          RESPONSE=$(echo "$RAW_RESPONSE" | sed '/^```/d')
+          echo "Cleaned response: $RESPONSE"
 
           # If Gemini failed or response is empty/invalid, default to 0.95
-          if [ "$GEMINI_OUTCOME" != "success" ] || [ -z "$RESPONSE" ] || echo "$RESPONSE" | grep -q "Please visit the following URL"; then
+          if [ "$GEMINI_OUTCOME" != "success" ] || [ -z "$RESPONSE" ] || echo "$RAW_RESPONSE" | grep -q "Please visit the following URL"; then
             echo "Gemini unavailable or auth failed - defaulting to 0.95"
             CONFIDENCE="0.95"
             REASONING="Gemini Code Assist not configured - auto-passing with default confidence"
