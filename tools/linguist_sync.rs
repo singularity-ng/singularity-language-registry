@@ -735,13 +735,11 @@ fn generate_languages_metadata_code(languages: &BTreeMap<String, Language>) -> R
 fn write_to_file(path: &Path, contents: &str) -> Result<()> {
     if path
         .parent()
-        .is_some_and(|parent| parent != Path::new(".") && !parent.exists())
+        .is_some_and(|parent| parent != Path::new(".") && !parent.exists()) && let Some(parent) = path.parent()
     {
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent).with_context(|| {
+        fs::create_dir_all(parent).with_context(|| {
                 format!("Failed to create parent directory for {}", path.display())
             })?;
-        }
     }
 
     fs::write(path, contents).with_context(|| format!("Failed to write {}", path.display()))?;

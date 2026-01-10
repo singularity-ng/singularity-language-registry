@@ -52,15 +52,13 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
 
     // Check RCA support
     for lang_id in &source.rca_languages {
-        if let Some(lang) = LANGUAGE_REGISTRY.get_language(lang_id) {
-            if !lang.rca_supported.load(Ordering::Relaxed) {
-                capability_mismatches.push(CapabilityMismatch {
+        if let Some(lang) = LANGUAGE_REGISTRY.get_language(lang_id) && !lang.rca_supported.load(Ordering::Relaxed) {
+            capability_mismatches.push(CapabilityMismatch {
                     language: lang_id.clone(),
                     capability: "RCA".to_owned(),
                     registry_says: false,
                     actual: true,
                 });
-            }
         } else {
             missing_from_registry.push(lang_id.clone());
         }
@@ -68,15 +66,13 @@ pub fn validate_metadata(source: &MetadataSource) -> MetadataValidation {
 
     // Check AST-Grep support
     for lang_id in &source.ast_grep_languages {
-        if let Some(lang) = LANGUAGE_REGISTRY.get_language(lang_id) {
-            if !lang.ast_grep_supported.load(Ordering::Relaxed) {
-                capability_mismatches.push(CapabilityMismatch {
+        if let Some(lang) = LANGUAGE_REGISTRY.get_language(lang_id) && !lang.ast_grep_supported.load(Ordering::Relaxed) {
+            capability_mismatches.push(CapabilityMismatch {
                     language: lang_id.clone(),
                     capability: "AST-Grep".to_owned(),
                     registry_says: false,
                     actual: true,
                 });
-            }
         } else {
             missing_from_registry.push(lang_id.clone());
         }

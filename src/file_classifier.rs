@@ -327,10 +327,8 @@ fn simplify_regex_pattern(pattern: &str) -> String {
             }
             '[' => {
                 // Handle character classes like [Vv] -> extract first char
-                if let Some(&first) = chars.peek() {
-                    if first != '^' {
-                        result.push(first.to_ascii_lowercase());
-                    }
+                if let Some(&first) = chars.peek() && first != '^' {
+                    result.push(first.to_ascii_lowercase());
                 }
                 // Skip until ]
                 for ch in chars.by_ref() {

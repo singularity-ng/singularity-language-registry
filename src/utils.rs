@@ -76,10 +76,8 @@ pub fn same_family(lang1: &str, lang2: &str) -> bool {
 #[must_use]
 pub fn recommended_linters(language: &str) -> Vec<String> {
     // Try to get from language metadata first
-    if let Some(lang) = LANGUAGE_REGISTRY.get_language(language) {
-        if !lang.linters.is_empty() {
-            return lang.linters.clone();
-        }
+    if let Some(lang) = LANGUAGE_REGISTRY.get_language(language) && !lang.linters.is_empty() {
+        return lang.linters.clone();
     }
 
     // Fallback to hardcoded defaults for languages without metadata
@@ -105,10 +103,8 @@ pub fn recommended_linters(language: &str) -> Vec<String> {
 #[must_use]
 pub fn file_patterns(language: &str) -> Vec<String> {
     // Try to get from language metadata first
-    if let Some(lang) = LANGUAGE_REGISTRY.get_language(language) {
-        if !lang.file_patterns.is_empty() {
-            return lang.file_patterns.clone();
-        }
+    if let Some(lang) = LANGUAGE_REGISTRY.get_language(language) && !lang.file_patterns.is_empty() {
+        return lang.file_patterns.clone();
     }
 
     // Fallback to hardcoded defaults for languages without metadata
