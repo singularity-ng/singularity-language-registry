@@ -23,22 +23,24 @@ use std::path::Path;
 use std::sync::LazyLock;
 
 /// Pre-built interpreter -> language name mapping from Linguist data
-static INTERPRETER_MAP: LazyLock<Vec<(&'static str, &'static str)>> = LazyLock::new(|| {
-    let mut map = Vec::new();
+/// Uses HashMap for O(1) lookups instead of O(n) linear search
+static INTERPRETER_MAP: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
+    let mut map = HashMap::new();
     for lang in LANGUAGES {
         for interpreter in lang.interpreters {
-            map.push((*interpreter, lang.name));
+            let _ = map.insert(*interpreter, lang.name);
         }
     }
     map
 });
 
 /// Pre-built filename -> language name mapping from Linguist data
-static FILENAME_MAP: LazyLock<Vec<(&'static str, &'static str)>> = LazyLock::new(|| {
-    let mut map = Vec::new();
+/// Uses HashMap for O(1) lookups instead of O(n) linear search
+static FILENAME_MAP: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
+    let mut map = HashMap::new();
     for lang in LANGUAGES {
         for filename in lang.filenames {
-            map.push((*filename, lang.name));
+            let _ = map.insert(*filename, lang.name);
         }
     }
     map
@@ -112,26 +114,33 @@ pub fn detect_from_shebang(content: &str) -> Option<&'static LanguageInfo> {
         return Some(lang);
     }
 
-    // Third try: Look up in Linguist interpreter map for language name
+    // Third try: Direct HashMap lookup for exact interpreter match
+    if let Some(lang_name) = INTERPRETER_MAP.get(base_interpreter) {
+        if let Some(lang) = lookup_language_by_name(lang_name) {
+            return Some(lang);
+        }
+    }
+
+    // Fourth try: Fuzzy match in interpreter map (for partial matches)
     for (interp, lang_name) in INTERPRETER_MAP.iter() {
         if base_interpreter.contains(interp) || interpreter.contains(interp) {
-            // Convert language name to ID (lowercase, handle spaces)
-            let lang_id = lang_name.to_lowercase().replace(' ', "-");
-            if let Some(lang) = LANGUAGE_REGISTRY.get_language(&lang_id) {
-                return Some(lang);
-            }
-            // Try without conversion
-            if let Some(lang) = LANGUAGE_REGISTRY.get_language(&lang_name.to_lowercase()) {
-                return Some(lang);
-            }
-            // Try by alias
-            if let Some(lang) = LANGUAGE_REGISTRY.get_language_by_alias(&lang_id) {
+            if let Some(lang) = lookup_language_by_name(lang_name) {
                 return Some(lang);
             }
         }
     }
 
     None
+}
+
+/// Helper function to look up a language by its display name.
+/// Handles conversion from display name (e.g., "C++") to registry ID (e.g., "cpp").
+fn lookup_language_by_name(lang_name: &str) -> Option<&'static LanguageInfo> {
+    let lang_id = lang_name.to_lowercase().replace(' ', "-");
+    LANGUAGE_REGISTRY
+        .get_language(&lang_id)
+        .or_else(|| LANGUAGE_REGISTRY.get_language(&lang_name.to_lowercase()))
+        .or_else(|| LANGUAGE_REGISTRY.get_language_by_alias(&lang_id))
 }
 
 /// Detect language from content patterns
@@ -193,25 +202,27 @@ pub fn detect_from_patterns(content: &str) -> Option<&'static LanguageInfo> {
 }
 
 /// Detect language for special filenames (Makefile, Dockerfile, etc.)
-/// Uses Linguist filename data.
+/// Uses Linguist filename data with O(1) HashMap lookup for exact matches.
 #[must_use]
 pub fn detect_special_files(filename: &str) -> Option<&'static LanguageInfo> {
-    // First try exact match from Linguist data
+    // First try exact O(1) HashMap lookup
+    if let Some(lang_name) = FILENAME_MAP.get(filename) {
+        if let Some(lang) = lookup_language_by_name(lang_name) {
+            return Some(lang);
+        }
+    }
+
+    // Second try: case-insensitive iteration (for filenames like "dockerfile" vs "Dockerfile")
     for (fname, lang_name) in FILENAME_MAP.iter() {
         if filename.eq_ignore_ascii_case(fname) {
-            let lang_id = lang_name.to_lowercase().replace(' ', "-");
-            if let Some(lang) = LANGUAGE_REGISTRY.get_language(&lang_id) {
-                return Some(lang);
-            }
-            if let Some(lang) = LANGUAGE_REGISTRY.get_language(&lang_name.to_lowercase()) {
+            if let Some(lang) = lookup_language_by_name(lang_name) {
                 return Some(lang);
             }
         }
     }
 
     // Fallback for common patterns not in Linguist
-    let lower = filename.to_lowercase();
-    match lower.as_str() {
+    match filename.to_lowercase().as_str() {
         "cargo.toml" | "cargo.lock" => LANGUAGE_REGISTRY.get_language("toml"),
         "go.mod" | "go.sum" => LANGUAGE_REGISTRY.get_language("go-module"),
         _ => None,
@@ -272,13 +283,7 @@ pub fn detect_from_heuristics(extension: &str, content: &str) -> Option<&'static
         // Evaluate rules in order
         for rule in entry.rules {
             if rule_matches(rule, content) {
-                // Convert language name to registry ID
-                let lang_id = rule.language.to_lowercase().replace(' ', "-");
-                if let Some(lang) = LANGUAGE_REGISTRY.get_language(&lang_id) {
-                    return Some(lang);
-                }
-                // Try without conversion
-                if let Some(lang) = LANGUAGE_REGISTRY.get_language(&rule.language.to_lowercase()) {
+                if let Some(lang) = lookup_language_by_name(rule.language) {
                     return Some(lang);
                 }
             }
