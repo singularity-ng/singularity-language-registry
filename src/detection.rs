@@ -115,18 +115,14 @@ pub fn detect_from_shebang(content: &str) -> Option<&'static LanguageInfo> {
     }
 
     // Third try: Direct HashMap lookup for exact interpreter match
-    if let Some(lang_name) = INTERPRETER_MAP.get(base_interpreter) {
-        if let Some(lang) = lookup_language_by_name(lang_name) {
-            return Some(lang);
-        }
+    if let Some(lang_name) = INTERPRETER_MAP.get(base_interpreter) && let Some(lang) = lookup_language_by_name(lang_name) {
+        return Some(lang);
     }
 
     // Fourth try: Fuzzy match in interpreter map (for partial matches)
     for (interp, lang_name) in INTERPRETER_MAP.iter() {
-        if base_interpreter.contains(interp) || interpreter.contains(interp) {
-            if let Some(lang) = lookup_language_by_name(lang_name) {
-                return Some(lang);
-            }
+        if base_interpreter.contains(interp) || interpreter.contains(interp) && let Some(lang) = lookup_language_by_name(lang_name) {
+            return Some(lang);
         }
     }
 
@@ -177,12 +173,10 @@ pub fn detect_from_patterns(content: &str) -> Option<&'static LanguageInfo> {
     // JSON - starts with { or [
     let trimmed = content.trim();
     if (trimmed.starts_with('{') && trimmed.ends_with('}'))
-        || (trimmed.starts_with('[') && trimmed.ends_with(']'))
+        || (trimmed.starts_with('[') && trimmed.ends_with(']')) && !content.contains("function") && !content.contains("class ")
     {
         // Avoid false positives with code blocks
-        if !content.contains("function") && !content.contains("class ") {
-            return LANGUAGE_REGISTRY.get_language("json");
-        }
+        return LANGUAGE_REGISTRY.get_language("json");
     }
 
     // YAML (check for common patterns)
@@ -191,11 +185,9 @@ pub fn detect_from_patterns(content: &str) -> Option<&'static LanguageInfo> {
     }
 
     // Markdown - but be careful not to match code with comments
-    if content.starts_with("# ") && content.contains("\n\n") {
+    if content.starts_with("# ") && content.contains("\n\n") && content.contains("\n## ") || content.contains("\n### ") || content.contains("```") {
         // Multiple paragraphs suggests prose, not code
-        if content.contains("\n## ") || content.contains("\n### ") || content.contains("```") {
-            return LANGUAGE_REGISTRY.get_language("markdown");
-        }
+        return LANGUAGE_REGISTRY.get_language("markdown");
     }
 
     None
@@ -206,18 +198,14 @@ pub fn detect_from_patterns(content: &str) -> Option<&'static LanguageInfo> {
 #[must_use]
 pub fn detect_special_files(filename: &str) -> Option<&'static LanguageInfo> {
     // First try exact O(1) HashMap lookup
-    if let Some(lang_name) = FILENAME_MAP.get(filename) {
-        if let Some(lang) = lookup_language_by_name(lang_name) {
-            return Some(lang);
-        }
+    if let Some(lang_name) = FILENAME_MAP.get(filename) && let Some(lang) = lookup_language_by_name(lang_name) {
+        return Some(lang);
     }
 
     // Second try: case-insensitive iteration (for filenames like "dockerfile" vs "Dockerfile")
     for (fname, lang_name) in FILENAME_MAP.iter() {
-        if filename.eq_ignore_ascii_case(fname) {
-            if let Some(lang) = lookup_language_by_name(lang_name) {
-                return Some(lang);
-            }
+        if filename.eq_ignore_ascii_case(fname) && let Some(lang) = lookup_language_by_name(lang_name) {
+            return Some(lang);
         }
     }
 
@@ -240,19 +228,13 @@ pub fn is_detectable(file_path: &Path, content: Option<&str>) -> bool {
     }
 
     // Check content if provided
-    if let Some(file_content) = content {
-        if detect_from_content(file_content).is_some() {
-            return true;
-        }
+    if let Some(file_content) = content && detect_from_content(file_content).is_some() {
+        return true;
     }
 
     // Check special files
-    if let Some(filename) = file_path.file_name() {
-        if let Some(name) = filename.to_str() {
-            if detect_special_files(name).is_some() {
-                return true;
-            }
-        }
+    if let Some(filename) = file_path.file_name() && let Some(name) = filename.to_str() && detect_special_files(name).is_some() {
+        return true;
     }
 
     false
@@ -282,10 +264,8 @@ pub fn detect_from_heuristics(extension: &str, content: &str) -> Option<&'static
 
         // Evaluate rules in order
         for rule in entry.rules {
-            if rule_matches(rule, content) {
-                if let Some(lang) = lookup_language_by_name(rule.language) {
-                    return Some(lang);
-                }
+            if rule_matches(rule, content) && let Some(lang) = lookup_language_by_name(rule.language) {
+                return Some(lang);
             }
         }
 
@@ -307,9 +287,8 @@ fn rule_matches(rule: &HeuristicRule, content: &str) -> bool {
     }
 
     // Check named pattern if present
-    if let Some(named) = rule.named_pattern {
-        if let Some(patterns) = NAMED_PATTERN_MAP.get(named) {
-            // Named patterns use regex - do simple substring check for common cases
+    if let Some(named) = rule.named_pattern && let Some(patterns) = NAMED_PATTERN_MAP.get(named) {
+        // Named patterns use regex - do simple substring check for common cases
             let any_match = patterns.iter().any(|p| {
                 // For simple patterns, check substring
                 // Complex regex patterns won't match but that's acceptable
@@ -319,7 +298,6 @@ fn rule_matches(rule: &HeuristicRule, content: &str) -> bool {
             if !any_match {
                 return false;
             }
-        }
     }
 
     // Check direct patterns

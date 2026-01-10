@@ -1,7 +1,7 @@
 [package]
 name = "singularity-language-registry"
 version = "0.2.0"
-edition = "2021"
+edition = "2024"
 license-file = "LICENSE"
 authors = ["Singularity Team"]
 description = "Centralized language registry for all Singularity analysis engines"

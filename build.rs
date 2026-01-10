@@ -71,10 +71,8 @@ fn main() {
     }
 
     // Generate metadata report if requested
-    if env::var("GENERATE_METADATA_REPORT").is_ok() {
-        if let Err(error) = generate_report() {
-            println!("cargo:warning=Failed to generate report: {error}");
-        }
+    if env::var("GENERATE_METADATA_REPORT").is_ok() && let Err(error) = generate_report() {
+        println!("cargo:warning=Failed to generate report: {error}");
     }
 }
 
